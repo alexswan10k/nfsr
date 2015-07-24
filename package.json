@@ -1,13 +1,13 @@
 {
   "name": "nfsr",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin" : {
-
+      "nfsr" : "bin/nfsr.sh"
   },
   "repository": {
     "type": "git",
