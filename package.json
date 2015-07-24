@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin" : {
-    "nfsr" : "nfsr.bat"
+    "nfsr" : "bin/nfsr.bat"
   },
   "repository": {
     "type": "git",
