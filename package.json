@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin" : {
-      "nfsr" : "bin/nfsr.sh"
+  "bin": {
+    "nfsr": "bin/nfsr.sh"
   },
   "repository": {
     "type": "git",
@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/Metal10k/nfsr/issues"
   },
-  "homepage": "https://github.com/Metal10k/nfsr"
+  "homepage": "https://github.com/Metal10k/nfsr",
+  "dependencies": {
+    "fsharp": "^0.1.4"
+  }
 }
