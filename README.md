@@ -115,6 +115,9 @@ All libraries are effectively loaded inside their own module. Make sure everythi
 There is currently no way to make a whole library script internal. 
 For the time being it is recommended to prefix script with '_', however this may need further consideration.
 
+Another thing to be aware of is when you create an executable script which is to be run through nfsr, 
+it is likely the script will not be executed from the path where it is contained.
+It is therefore important to use `System.Environment.CurrentDirectory` when getting the executing path instead of `__SOURCE_DIRECTORY__`.
 
 ### Possible future enhancements
 * Improvement of tree walking algorithm to support order of prescedence and caching

@@ -3,7 +3,7 @@ open System
 open System.IO
 
 let scripts = seq {
-            for q in Resolver.getLocals() do
+            for q in Resolver.getLocals false do
                 match q with
                 | Resolver.Library(path) -> 
                     yield path

@@ -28,57 +28,73 @@ let getFilesIn pattern dir =
 let getFsxFilesIn =
     getFilesIn "*.fsx"
 
-let getDirectoriesIn dir pattern =
-    Directory.EnumerateDirectories(dir)
+//let getDirectoriesIn dir pattern =
+//    Directory.EnumerateDirectories(dir)
 
 type FsxType =
     | Script of string
     | Library of string
 
-let rec getModules path =
-    seq {   //this fn needs work. Needs to be aware of ancestor lib folder etc
-            let shortDirName = Path.GetFileName(path)
-            match shortDirName with
-            //| t when t.Contains("lib")
-            | "lib" -> 
-                for file in (getFsxFilesIn path) do
-                    match Path.GetFileName(file) with
-                    | "_References.fsx" -> ()
-                    | _ -> yield Library(file)
-            | "node-modules" -> ()
-            //| "bin" -> 
-            | _ -> 
-                for file in (getFsxFilesIn path) do
-                    match Path.GetFileName(file) with
-                    | "_References.fsx" -> ()
-                    | _ -> yield Script(file)
-            for d in Directory.EnumerateDirectories(path) do
-                yield! getModules d
-        }
+let private getModules path isRecursive =
+    let rec getModules path level =
+        seq {   
+                let shortDirName = Path.GetFileName(path)
+                match shortDirName with
+                //| t when t.Contains("lib")
+                | "lib" -> 
+                    for file in (getFsxFilesIn path) do
+                        match Path.GetFileName(file) with
+                        | "_References.fsx" -> ()
+                        | _ -> yield (Library(file), level)
+                | "node-modules" -> ()
+                | "bin" -> 
+                    for file in (getFsxFilesIn path) do
+                        match Path.GetFileName(file) with
+                        | "_References.fsx" -> ()
+                        | _ -> yield (Script(file), level)
+                | _ -> 
+                    for file in (getFsxFilesIn path) do
+                        match Path.GetFileName(file) with
+                        | "_References.fsx" -> ()
+                        | _ -> yield (Script(file), level + 100) //penalise scripts not conforming to convention. These should resolve after scripts in bin
+                for d in Directory.EnumerateDirectories(path) do
+                    yield! getModules d (level + 1)
+            }
+    let modules = getModules path 0
+                    |> Seq.sortBy(fun (file, level) -> level)
+    let sortedModules =
+        if isRecursive then
+            modules
+        else
+            if Seq.length modules > 0 then
+                let (_, lowestLevel) = Seq.head modules
+                modules |> Seq.filter (fun (file, level) -> level = lowestLevel)
+            else
+                modules
+    sortedModules |> Seq.map(fun (file, level) -> file)
 
-let getGlobals() =
-    getModules globalBasePath
 
-let getLocals() =
-    getModules localPath
+let getGlobals isRecursive =
+    getModules globalBasePath isRecursive
 
-let getOptions fn =
+let getLocals isRecursive =
+    getModules localPath isRecursive
+
+let getScriptOptions getModulesFn =
     seq {
-        for f in fn() do
-            //printfn "%s" (f.ToString())
+        for f in getModulesFn true do
             match f with
             | Script(path) -> yield path
             | _ -> ()
         }
-    //getFsxFilesIn localPath
 
 let getClosestMatch name =
-    let seq = getOptions getLocals
+    let seq = getScriptOptions getLocals
                 |> Seq.filter (fun q -> q.Contains name)
     if not (Seq.isEmpty seq) then
         Some (Seq.head seq)
     else
-        let seq = getOptions getGlobals
+        let seq = getScriptOptions getGlobals
                     |> Seq.filter (fun q -> q.Contains name)
         if not (Seq.isEmpty seq) then
             Some (Seq.head seq)
