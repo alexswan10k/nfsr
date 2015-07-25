@@ -120,7 +120,7 @@ it is likely the script will not be executed from the path where it is contained
 It is therefore important to use `System.Environment.CurrentDirectory` when getting the executing path instead of `__SOURCE_DIRECTORY__`.
 
 ### Possible future enhancements
-* Improvement of tree walking algorithm to support order of prescedence and caching
+* Improvement of tree walking algorithm and support for caching
 * Paket integration (any npm package with a packet.dependencies should auto paket install). 
 	This would allow for better support of arbitrary .fsx files in gists, along with true
 	nuget integration.

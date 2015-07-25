@@ -1,3 +1,5 @@
+@echo off
+
 IF EXIST "%ProgramFiles(x86)%\Microsoft SDKs\F#\4.0\Framework\v4.0\" (
 	set fsharppath="%ProgramFiles(x86)%\Microsoft SDKs\F#\4.0\Framework\v4.0"
 )

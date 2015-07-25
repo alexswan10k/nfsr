@@ -1,0 +1,2 @@
+Creates a _References.fsx file of your closest lib file.
+You can use this to update your references after a package install

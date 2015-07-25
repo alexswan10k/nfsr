@@ -9,12 +9,5 @@ let private args = fsi.CommandLineArgs
                     |> Array.toSeq |> Seq.skip 1 |> Seq.toArray
                     |> join
 
-//let useLib = "--target:library"
-//printfn "%s" targetScript
-//printfn "%s" Resolver.fscPath
-//printfn "%s" Resolver.localPath
-//Process.shellExecute(Resolver.fscPath + " " + targetScript)
-//    |> Process.print
-
 Process.executeProcess(Resolver.fscPath, args)
     |> Process.print

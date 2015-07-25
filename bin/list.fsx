@@ -7,6 +7,7 @@ Resolver.getScriptOptions Resolver.getLocals
     |> Seq.map System.IO.Path.GetFileNameWithoutExtension
     |> Seq.iter (printfn "%s")
 
+printfn ""
 printfn "global scripts:"
 Resolver.getScriptOptions Resolver.getGlobals 
     |> Seq.map System.IO.Path.GetFileNameWithoutExtension

@@ -1,0 +1,5 @@
+list generates a list of all executable scripts in the current scope.
+To execute a script type:
+nfsr %yourcommand%
+
+You do not need a .fsx suffix

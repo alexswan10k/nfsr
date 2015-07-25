@@ -1,9 +1,16 @@
 #load "..\lib\Resolver.fsx"
+#load "..\lib\Args.fsx"
 open System
 open System.IO
 
+let private locals =
+    if Args.has "-r" then
+        Resolver.getLocals true
+    else
+        Resolver.getLocals false
+
 let scripts = seq {
-            for q in Resolver.getLocals false do
+            for q in locals do
                 match q with
                 | Resolver.Library(path) -> 
                     yield path
@@ -35,6 +42,7 @@ let fromPath = System.Environment.CurrentDirectory
 let loadTags = scripts 
                 |> Seq.map (makeRelativePath fromPath)
                 |> Seq.map stripBase
-                |> Seq.map (fun s -> ("#load \"" + s + "\""))
+                |> Seq.map (fun s -> ("#load \"\"\"" + s + "\"\"\""))
 
 File.WriteAllLines("_References.fsx", loadTags)
+printfn "Created _References.fsx"

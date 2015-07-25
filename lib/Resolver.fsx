@@ -11,7 +11,7 @@ let fsharpPath =
         px86 + """\Microsoft SDKs\F#\3.0\Framework\v4.0"""
     ]
     directoriesToCheck |> List.find (fun q -> Directory.Exists(q))
-printfn "%s" fsharpPath    
+
 let fsiPath =
     fsharpPath + """\Fsi.exe"""
 
