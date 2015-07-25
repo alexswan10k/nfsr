@@ -1,6 +1,6 @@
 open System.IO
 
-let globalBasePath = """%appdata%\npm\node_modules\"""
+let globalBasePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData) + """\npm\node_modules\"""
 let localPath = System.Environment.CurrentDirectory//__SOURCE_DIRECTORY__ 
 
 let fsharpPath = 
@@ -62,9 +62,9 @@ let getGlobals() =
 let getLocals() =
     getModules localPath
 
-let getOptions() =
+let getOptions fn =
     seq {
-        for f in getLocals() do
+        for f in fn() do
             //printfn "%s" (f.ToString())
             match f with
             | Script(path) -> yield path
@@ -73,9 +73,14 @@ let getOptions() =
     //getFsxFilesIn localPath
 
 let getClosestMatch name =
-    let seq = getOptions()
+    let seq = getOptions getLocals
                 |> Seq.filter (fun q -> q.Contains name)
     if not (Seq.isEmpty seq) then
         Some (Seq.head seq)
     else
-        None
+        let seq = getOptions getGlobals
+                    |> Seq.filter (fun q -> q.Contains name)
+        if not (Seq.isEmpty seq) then
+            Some (Seq.head seq)
+        else
+            None

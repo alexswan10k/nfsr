@@ -20,7 +20,7 @@ let executeProcess (exe,args) =
                                 output.Append(args.Data) |> ignore
                                 outputList.Add(args.Data))
     p.ErrorDataReceived.Add(fun args -> error.Append(args.Data) |> ignore)
-    printfn "%s" ("starting process:"+exe + " with command "+ args + " in " + psi.WorkingDirectory)
+    //printfn "%s" ("starting process:"+exe + " with command "+ args + " in " + psi.WorkingDirectory)
     p.BeginErrorReadLine()
     p.BeginOutputReadLine()
     p.WaitForExit()

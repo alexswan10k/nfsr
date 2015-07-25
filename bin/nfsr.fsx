@@ -4,6 +4,8 @@
 let cmatch = 
     Resolver.getClosestMatch (fsi.CommandLineArgs.[1])
 
+printfn "%s" ("nfsr executing path " + Resolver.localPath)
+
 match cmatch with
 | Some(m) ->    
                 let join (arr: string[]) = System.String.Join(" ", arr)
