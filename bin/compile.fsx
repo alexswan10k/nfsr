@@ -1,16 +1,20 @@
 #load "..\lib\Resolver.fsx"
 #load "..\lib\Process.fsx"
 //Experimental
+//see http://softwareblog.morlok.net/2008/07/05/f-compiler-fscexe-command-line-options/
 
-let targetScript = 
-    fsi.CommandLineArgs.[1]
+let private join (arr: string[]) = System.String.Join(" ", arr)
 
-let useLib = "--target:library"
+let private args = fsi.CommandLineArgs 
+                    |> Array.toSeq |> Seq.skip 1 |> Seq.toArray
+                    |> join
+
+//let useLib = "--target:library"
 //printfn "%s" targetScript
 //printfn "%s" Resolver.fscPath
 //printfn "%s" Resolver.localPath
 //Process.shellExecute(Resolver.fscPath + " " + targetScript)
 //    |> Process.print
 
-Process.executeProcess(Resolver.fscPath, targetScript)
+Process.executeProcess(Resolver.fscPath, args)
     |> Process.print

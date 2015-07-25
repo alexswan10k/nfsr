@@ -1,6 +1,6 @@
 {
   "name": "nfsr",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -20,6 +20,6 @@
   },
   "homepage": "https://github.com/Metal10k/nfsr",
   "dependencies": {
-    "fsharp": "^0.1.4"
+
   }
 }
