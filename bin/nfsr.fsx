@@ -10,6 +10,6 @@ match cmatch with
                 let fullPath = Resolver.fsiPath + " " + m
                 let target = m + " " + join (fsi.CommandLineArgs |> Array.toSeq |> Seq.skip 2 |> Seq.toArray)
                 printfn "%s" ("fsi " + target)
-                Process.executeProcess(Resolver.fsiPath, target).output |> Array.iter (fun q ->  printfn "%s" q)
+                Process.executeProcess(Resolver.fsiPath, target) |> Process.print
 
 | none -> printfn "no match"

@@ -3,8 +3,20 @@ open System.IO
 let globalBasePath = """%appdata%\npm\node_modules\"""
 let localPath = System.Environment.CurrentDirectory//__SOURCE_DIRECTORY__ 
 
-let fsiPath = //"C:\Program Files (x86)\Microsoft SDKs\F#\3.1\Framework\v4.0\Fsi.exe"
-    """C:\Program Files (x86)\Microsoft SDKs\F#\4.0\Framework\v4.0\Fsi.exe"""
+let fsharpPath = 
+    let px86 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86)
+    let directoriesToCheck = [
+        px86 + """\Microsoft SDKs\F#\4.0\Framework\v4.0"""
+        px86 + """\Microsoft SDKs\F#\3.1\Framework\v4.0"""
+        px86 + """\Microsoft SDKs\F#\3.0\Framework\v4.0"""
+    ]
+    directoriesToCheck |> List.find (fun q -> Directory.Exists(q))
+printfn "%s" fsharpPath    
+let fsiPath =
+    fsharpPath + """\Fsi.exe"""
+
+let fscPath = 
+    fsharpPath + """\Fsc.exe"""
 
 let rec getAllFiles dir pattern =
     seq { yield! Directory.EnumerateFiles(dir, pattern)
