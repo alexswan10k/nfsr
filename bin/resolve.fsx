@@ -4,11 +4,13 @@
 open System.IO
 
 let args = Args.getArgs()
-let headParams = _Nfsr.getHeadParams (args)
-let allowedTypes = _Nfsr.getAllowedTypes (headParams)
+let allowedTypes = _Nfsr.getAllowedTypes (args)
+
+printfn "allowed types: "
+allowedTypes |> Seq.iter (fun q -> printfn "%A" q)
 
 let cmatch = 
-    Resolver.getClosestMatch (args.[headParams.Length + 1]) allowedTypes
+    Resolver.getClosestMatch (args.[1]) allowedTypes
 
 match cmatch with
 | Some(m) -> printfn "%s" cmatch.Value.Path

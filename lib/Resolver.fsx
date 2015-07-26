@@ -3,7 +3,7 @@ open System.IO
 let globalBasePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData) + """\npm\node_modules\"""
 let localPath = System.Environment.CurrentDirectory//__SOURCE_DIRECTORY__ 
 
-let fsharpPath = 
+let private fsharpPath = 
     let px86 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86)
     let directoriesToCheck = [
         px86 + """\Microsoft SDKs\F#\4.0\Framework\v4.0"""
@@ -12,11 +12,21 @@ let fsharpPath =
     ]
     directoriesToCheck |> List.find (fun q -> Directory.Exists(q))
 
+let private powershellPathN = 
+    let windowsFldr = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Windows)
+    let directoriesToCheck = [
+        windowsFldr + """\System32\WindowsPowerShell\v1.0"""
+    ]
+    directoriesToCheck |> List.find (fun q -> Directory.Exists(q))
+
 let fsiPath =
     fsharpPath + """\Fsi.exe"""
 
 let fscPath = 
     fsharpPath + """\Fsc.exe"""
+
+let powershellPath = 
+    powershellPathN + """\Powershell.exe"""
 
 let rec getAllFiles dir pattern =
     seq { yield! Directory.EnumerateFiles(dir, pattern)

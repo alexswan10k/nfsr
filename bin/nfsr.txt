@@ -1,0 +1,25 @@
+Node Fsharp Script Runner allows you to resolve scripts on demand based on a tree walking algorithm.
+
+To execute a command, type:
+>nfsr %yourcommand% %params-if-applicable%
+
+nfsr will attempt to walk the tree from your current path recursively into any nested folders looking for scripts.
+The first script matching the name will be executed. If this fails, it will begin searching node_modules for scripts. 
+The closest to your current path wins.
+
+You can also target specific scripts:
+-
+Options available are
+-f Fsharp
+-b Batch files
+-p Powershell ps1 scripts
+-s Shell scripts
+
+To resolve a batch file for example
+>nfsr -b my-batch-file
+
+you may also list files:
+>nfsr list -b -f
+
+or see the full path of the resolved target script which is executed by nfsr:
+>nfsr resolve %yourBatch% -b
