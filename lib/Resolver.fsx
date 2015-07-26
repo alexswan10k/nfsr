@@ -31,31 +31,65 @@ let getFsxFilesIn =
 //let getDirectoriesIn dir pattern =
 //    Directory.EnumerateDirectories(dir)
 
-type FsxType =
-    | Script of string
-    | Library of string
+type FileType =
+    | Fsx 
+    | Batch 
+    | Shell 
+    | Powershell 
+    //| All = 4   
 
-let private getModules path isRecursive =
+type ScriptFile =
+    {
+        FileType: FileType;
+        Name: string;
+        Path: string
+    }
+type ScriptRole =
+    | Script of ScriptFile
+    | Library of ScriptFile
+
+let private getModules path (allowedTypes: FileType[]) isRecursive =
+
+    let getFilesIn path =
+        let getFilesForExt path ext (fileType: FileType) =
+            [|for file in (getFilesIn ext path) ->
+                    {
+                        FileType = fileType;
+                        Name = Path.GetFileName(file);
+                        Path = file
+                    }
+                |]
+        let types = [|for t in allowedTypes ->
+                        match t with
+                        | FileType.Fsx -> getFilesForExt path "*.fsx" FileType.Fsx
+                        | FileType.Batch -> getFilesForExt path "*.bat" FileType.Batch
+                        | FileType.Shell -> getFilesForExt path "*.sh" FileType.Shell
+                        | FileType.Powershell -> getFilesForExt path "*.ps1" FileType.Powershell
+                        //| _ -> [||]
+                        |] 
+        types |> Array.collect (fun q -> q)
+        //System.Linq.Enumerable.SelectMany(types, (fun s i -> s )
     let rec getModules path level =
         seq {   
                 let shortDirName = Path.GetFileName(path)
                 match shortDirName with
                 //| t when t.Contains("lib")
                 | "lib" -> 
-                    for file in (getFsxFilesIn path) do
-                        match Path.GetFileName(file) with
-                        | "_References.fsx" -> ()
+                    for file in (getFilesIn path) do
+                        match file with
+                        | {Path = "_References.fsx"} -> ()       
                         | _ -> yield (Library(file), level)
-                | "node-modules" -> ()
+                | "node_modules" -> ()
+                | "bower_components"
                 | "bin" -> 
-                    for file in (getFsxFilesIn path) do
-                        match Path.GetFileName(file) with
-                        | "_References.fsx" -> ()
+                    for file in (getFilesIn path) do
+                        match file with
+                        | {Path = "_References.fsx"}  -> ()
                         | _ -> yield (Script(file), level)
                 | _ -> 
-                    for file in (getFsxFilesIn path) do
-                        match Path.GetFileName(file) with
-                        | "_References.fsx" -> ()
+                    for file in (getFilesIn path) do
+                        match file with
+                        | {Path = "_References.fsx"}  -> ()
                         | _ -> yield (Script(file), level + 100) //penalise scripts not conforming to convention. These should resolve after scripts in bin
                 for d in Directory.EnumerateDirectories(path) do
                     yield! getModules d (level + 1)
@@ -74,11 +108,11 @@ let private getModules path isRecursive =
     sortedModules |> Seq.map(fun (file, level) -> file)
 
 
-let getGlobals isRecursive =
-    getModules globalBasePath isRecursive
+let getGlobals =
+    getModules globalBasePath
 
-let getLocals isRecursive =
-    getModules localPath isRecursive
+let getLocals =
+    getModules localPath
 
 let getScriptOptions getModulesFn =
     seq {
@@ -88,14 +122,14 @@ let getScriptOptions getModulesFn =
             | _ -> ()
         }
 
-let getClosestMatch name =
-    let seq = getScriptOptions getLocals
-                |> Seq.filter (fun q -> q.Contains name)
+let getClosestMatch name (allowedTypes : FileType[]) =
+    let seq = getScriptOptions (getLocals allowedTypes)
+                |> Seq.filter (fun q -> q.Path.Contains name)
     if not (Seq.isEmpty seq) then
         Some (Seq.head seq)
     else
-        let seq = getScriptOptions getGlobals
-                    |> Seq.filter (fun q -> q.Contains name)
+        let seq = getScriptOptions (getGlobals allowedTypes)
+                    |> Seq.filter (fun q -> q.Path.Contains name)
         if not (Seq.isEmpty seq) then
             Some (Seq.head seq)
         else

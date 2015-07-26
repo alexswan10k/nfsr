@@ -1,11 +1,27 @@
-let has (hasArg:string) =
+let getArgs() =
     let args = fsi.CommandLineArgs
-    [for arg in args ->
-        if arg = hasArg then
+    args
+
+let hasFor arg (args:string[]) =
+    [for a in args ->
+        let firstPart = a.Split(':').[0] 
+        if firstPart.Length > 0 && firstPart = arg then
             true
         else
             false
         ]
     |> List.exists id
 
-//other useful functions for getting out arguments from fsi.CommandLineArgs
+let has (arg:string) =
+    getArgs() |> hasFor arg
+
+let getFor arg (args: string[]) =
+    [for a in args ->
+        match a.Split(':') with
+        | [|argKey; argVal|] when argKey = arg -> Some(argVal)
+        | _ -> None
+        ]
+    |> List.tryFind (fun q -> not (Option.isNone q))
+
+let get (arg: string) =
+    getArgs() |> getFor arg 
