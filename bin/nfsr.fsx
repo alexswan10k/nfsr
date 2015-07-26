@@ -5,7 +5,7 @@ open System.IO
 
 let args = Args.getArgs() |> Seq.skip 1 |> Seq.toArray
 
-if args.Length < 2 then
+if args.Length < 2 || args.[0] = "-h" || args.[0] = "--help" then
     File.ReadAllText(Resolver.globalBasePath + "\\nfsr\\bin\\nfsr.txt") |> printfn "%s"
 else
     let headParams = _Nfsr.getHeadParams (args)

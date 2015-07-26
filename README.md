@@ -1,69 +1,101 @@
 # Node FSharp Script Runner
-Note : this is a work in progress and is still unstable. Expect API's to change.
-### What is it?
 
 nfsr is a script runner/resolver for .fsx files using the benefits of npm linking and packages 
-to allow resolving complex dependencies. No longer do you have to worry about exactly
-where fsi.exe/fsc.exe is, if it is in your path, and where your scripts are. nfsr provides a
-tree walking algorithm to find and execute your scripts for you on demand.
-
-##### What does this mean?
-* No solution/project file required
-* No Visual Studio required (although it is highly recommended as this has best intellisense support)
-* Easier Dependency resolution
+to allow easy execution of locally scoped and system wide scripts. No longer do you have to worry about exactly
+where fsi.exe/fsc.exe is, if it is in your path, and where your scripts are precisely. nfsr provides a
+tree walking algorithm to find and execute your scripts for you on demand simply calling it by name.
 
 ### Getting started
 To install the runner, you will need nodejs installed and in the path. Then:
 ```
-npm install nfsr -g
+> npm install nfsr -g
 ```
 
 To create a list of all the available scripts in scope which can be executed via nfsr:
 ```
-nfsr list
+> nfsr list
 ```
 
 To execute a script test.fsx by recursing through both locally installed and globally installed packages:
 ```
-nfsr test
+> nfsr test -testparam1 -testparam2
 ```
 
 You can now install more scripts:
 ```
-npm install nfsr-package-one -g
-npm install nfsr-package-two
+> npm install nfsr-package-one -g
+> npm install nfsr-package-two
 ... etc
 ```
+##### Thats all great but all my scripts are in powershell/bash/batch files. Can i use this?
+No problem. nfsr's same tree walking algo can be used to target any of these:
+
+Run a powershell script:
+```
+> nfsr -p my-powershell-script
+```
+list all batch files
+```
+> nfsr list -b
+```
+
+find what file is actually being resolved when you run a command
+```
+> nfsr resolve -p	
+```
+
 ### Consuming dependencies
 To set up a working directory:
 ```
-npm init
+> npm init
 ```
 You can now use npm to load dependencies you may wish to reference in your script, or call via nfsr:
 ```
-npm install nfsr-sample-library --save
+> npm install nfsr-sample-library --save
 ```
 
 We can create a references file from the installed dependencies:
 ```
-nfsr create-refs
+> nfsr create-refs
 ```
+
+##### Ok, but I dont want to publish a npm package for my stuff, Can i just use a git repo?
+
+There are a couple of options here:
+* Bower - can pull code down directly from a git repository
+* Paket - Supports both git and Nuget packages
+
+The tree walker will assume a convention explained below, so as long as your files/directories conform, this should just work.
+
+There is also a function provided for restoring packages recursively, 
+which will walk all nested folders looking for bower.json or a paket.dependencies. 
+When it finds one of these it will issue a ```bower install``` or ```paket install```
+```
+> nfsr restore
+```
+
+### Convention
+Everything in a lib folder is assumed to be a non executable library. 
+These are ignored by nfsr but picked up by ```nfsr create-refs```(WIP). 
+Anything starting with "lib" or ending with "lib" is also considered to be a library.
+
+Everything else is an executable script.
 
 ### Thats all great, but what when I decide I want to use my "libraries" in a real program?
 The fsharp compiler actually covers this, to which a wrapper is provided, "compile".
 
 To create an executable of your script (no parameters currently supported):
 ```
-nfsr compile script.fsx
+> nfsr compile script.fsx
 ```
 Or perhaps you want to completely decouple from the F# environment
 ```
-nfsr compile script.fsx --standalone
+> nfsr compile script.fsx --standalone
 ```
 
 You can make binaries too
 ```
-nfsr compile library.fsx --target:library
+> nfsr compile library.fsx --target:library
 ```
 
 As this is simply a thin wrapper around fsc.exe, all commands you could issue to fsc are theoretically available.
@@ -121,14 +153,10 @@ It is therefore important to use `System.Environment.CurrentDirectory` when gett
 
 ### Possible future enhancements
 * Improvement of tree walking algorithm and support for caching
-* Paket integration (any npm package with a packet.dependencies should auto paket install). 
-	This would allow for better support of arbitrary .fsx files in gists, along with true
-	nuget integration.
-* Less noisy output
+* nfsr config file to allow explicit control of files
 * Less process wrapping (starting new fsi instances is expensive)
 * Proxy files for consolidated dependencies
 * Unix support - shell gateway script as opposed to batch file
-* Some kind of metadata system for the list command
 
 ### What was the drive behind this?
 

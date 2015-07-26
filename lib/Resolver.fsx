@@ -82,6 +82,13 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
     let rec getModules path level =
         seq {   
                 let shortDirName = Path.GetFileName(path)
+
+                let categorizeByConvention (file : ScriptFile) =
+                    if file.Name.Contains("lib.") || file.Name.StartsWith("lib") then
+                        Library(file)
+                    else
+                        Script(file)
+
                 match shortDirName with
                 //| t when t.Contains("lib")
                 | "lib" -> 
@@ -95,12 +102,12 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                     for file in (getFilesIn path) do
                         match file with
                         | {Path = "_References.fsx"}  -> ()
-                        | _ -> yield (Script(file), level)
+                        | _ -> yield (categorizeByConvention(file), level)
                 | _ -> 
                     for file in (getFilesIn path) do
                         match file with
                         | {Path = "_References.fsx"}  -> ()
-                        | _ -> yield (Script(file), level + 100) //penalise scripts not conforming to convention. These should resolve after scripts in bin
+                        | _ -> yield (categorizeByConvention(file), level + 100) //penalise scripts not conforming to convention. These should resolve after scripts in bin
                 for d in Directory.EnumerateDirectories(path) do
                     yield! getModules d (level + 1)
             }
