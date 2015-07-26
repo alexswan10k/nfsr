@@ -22,6 +22,7 @@ let getFor arg (args: string[]) =
         | _ -> None
         ]
     |> List.tryFind (fun q -> not (Option.isNone q))
+    |> Option.get
 
 let get (arg: string) =
     getArgs() |> getFor arg 

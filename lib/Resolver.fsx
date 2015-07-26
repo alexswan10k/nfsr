@@ -28,7 +28,7 @@ let fscPath =
 let powershellPath = 
     powershellPathN + """\Powershell.exe"""
 
-let rec getAllFiles dir pattern =
+let rec private getAllFiles dir pattern =
     seq { yield! Directory.EnumerateFiles(dir, pattern)
           for d in Directory.EnumerateDirectories(dir) do
               yield! getAllFiles d pattern }
@@ -52,7 +52,8 @@ type ScriptFile =
     {
         FileType: FileType;
         Name: string;
-        Path: string
+        Path: string;
+        Priority: int;
     }
 type ScriptRole =
     | Script of ScriptFile
@@ -60,13 +61,14 @@ type ScriptRole =
 
 let private getModules path (allowedTypes: FileType[]) isRecursive =
 
-    let getFilesIn path =
+    let getFilesIn path priority =
         let getFilesForExt path ext (fileType: FileType) =
             [|for file in (getFilesIn ext path) ->
                     {
                         FileType = fileType;
                         Name = Path.GetFileName(file);
-                        Path = file
+                        Path = file;
+                        Priority = priority
                     }
                 |]
         let types = [|for t in allowedTypes ->
@@ -84,7 +86,7 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                 let shortDirName = Path.GetFileName(path)
 
                 let categorizeByConvention (file : ScriptFile) =
-                    if file.Name.Contains("lib.") || file.Name.StartsWith("lib") then
+                    if file.Name.Contains("lib.") || file.Name.StartsWith("lib") || file.Path.Contains("lib") then
                         Library(file)
                     else
                         Script(file)
@@ -92,22 +94,25 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                 match shortDirName with
                 //| t when t.Contains("lib")
                 | "lib" -> 
-                    for file in (getFilesIn path) do
+                    let score = level
+                    for file in (getFilesIn path score) do
                         match file with
-                        | {Path = "_References.fsx"} -> ()       
-                        | _ -> yield (Library(file), level)
+                        | f when f.Name = "_References.fsx" -> ()       
+                        | _ -> yield (Library(file), score)
                 | "node_modules" -> ()
                 | "bower_components"
                 | "bin" -> 
-                    for file in (getFilesIn path) do
+                    let score = level
+                    for file in (getFilesIn path score) do
                         match file with
-                        | {Path = "_References.fsx"}  -> ()
-                        | _ -> yield (categorizeByConvention(file), level)
+                        | f when f.Name = "_References.fsx"   -> ()
+                        | _ -> yield (categorizeByConvention(file), score)
                 | _ -> 
-                    for file in (getFilesIn path) do
+                    let score = level + 100
+                    for file in (getFilesIn path score) do
                         match file with
-                        | {Path = "_References.fsx"}  -> ()
-                        | _ -> yield (categorizeByConvention(file), level + 100) //penalise scripts not conforming to convention. These should resolve after scripts in bin
+                        | f when f.Name = "_References.fsx"   -> ()
+                        | _ -> yield (categorizeByConvention(file), score) //penalise scripts not conforming to convention. These should resolve after scripts in bin
                 for d in Directory.EnumerateDirectories(path) do
                     yield! getModules d (level + 1)
             }

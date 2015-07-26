@@ -4,18 +4,26 @@ open System
 open System.IO
 
 let private locals =
-    if Args.has "-r" then
-        Resolver.getLocals true
-    else
-        Resolver.getLocals false
+    Resolver.getLocals [|Resolver.FileType.Fsx|] true
 
 let scripts = seq {
             for q in locals do
                 match q with
-                | Resolver.Library(path) -> 
-                    yield path
+                | Resolver.Library(file) -> 
+                    yield file
                 | _ -> ()
     } 
+let recNo = 
+    if Args.has "-r" then
+        match Args.getFor "-r" (Args.getArgs()) with
+        | Some(s) -> 
+            System.Int32.Parse(s)
+        | None -> 3
+    else 3
+scripts |> Seq.filter (fun q -> 
+
+                        q.Priority <= recNo)
+
 //turn tags into relative paths!
 
 let makeRelativePath fromPath toPath =  //from http://stackoverflow.com/questions/275689/how-to-get-relative-path-from-absolute-path
@@ -40,6 +48,7 @@ let stripBase (path : string) =
 
 let fromPath = System.Environment.CurrentDirectory
 let loadTags = scripts 
+                |> Seq.map (fun q -> q.Path)
                 |> Seq.map (makeRelativePath fromPath)
                 |> Seq.map stripBase
                 |> Seq.map (fun s -> ("#load \"\"\"" + s + "\"\"\""))
