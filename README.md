@@ -59,6 +59,24 @@ We can create a references file from the installed dependencies:
 > nfsr create-refs
 ```
 
+### Dynamic dependencies (experimental)
+
+It is also possible to use the same system to resolve library references dynamically in both local and global scope. 
+Rather than specify a path in your script, you can simply specify the library name to 
+generate a _DynamicReferences.fsx file using the following command:
+```
+> nfsr dynamic-refs add <library>
+...
+> nfsr dynamic-refs remove <library>
+```
+This will also manage a configuration file "DynamicReferences.txt" allowing you to quickly restore these references on 
+another system where the physical files may be in a different place. Only this file should be checked into source control.
+This can be done with:
+```
+> nfsr dynamic-refs refresh
+```
+The intention is to tie this into ```nfsr restore```
+
 ##### Ok, but I dont want to publish a npm package for my stuff, Can i just use a git repo?
 
 There are a couple of options here:

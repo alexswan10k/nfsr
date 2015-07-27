@@ -103,13 +103,16 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                     else
                         Script(file)
 
+                let isToBeExcluded (script:ScriptFile) =
+                    script.Name = "_References.fsx" || script.Name = "_DynamicReferences.fsx"
+
                 match shortDirName with
                 //| t when t.Contains("lib")
                 | "lib" -> 
                     let score = level
                     for file in (getFilesIn path score) do
                         match file with
-                        | f when f.Name = "_References.fsx" -> ()       
+                        | f when isToBeExcluded f -> ()       
                         | _ -> yield (Library(file), score)
                 | "node_modules" -> ()
                 | "bower_components"
@@ -117,13 +120,13 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                     let score = level
                     for file in (getFilesIn path score) do
                         match file with
-                        | f when f.Name = "_References.fsx"   -> ()
+                        | f when isToBeExcluded f -> ()
                         | _ -> yield (categorizeByConvention(file), score)
                 | _ -> 
                     let score = level + 100
                     for file in (getFilesIn path score) do
                         match file with
-                        | f when f.Name = "_References.fsx"   -> ()
+                        | f when isToBeExcluded f -> ()
                         | _ -> yield (categorizeByConvention(file), score) //penalise scripts not conforming to convention. These should resolve after scripts in bin
                 if path.Length < 240 then
                     for d in Directory.EnumerateDirectories(path) do
