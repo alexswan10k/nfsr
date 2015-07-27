@@ -29,8 +29,8 @@ else
                             //Process.shellExecute("powershell -ExecutionPolicy Bypass -File "+ target) |> Process.print
                         else
                             Process.shellExecute(target) |> Process.print
-                
-                    if Args.hasFor "-h" headParams || Args.hasFor "--help" headParams then
+
+                    if Args.hasFor "-h" args || Args.hasFor "--help" args then
                         let helpfilePath = m.Path
                                             .Replace(".fsx", "")
                                             .Replace(".bat", "")
