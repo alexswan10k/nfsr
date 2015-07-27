@@ -30,4 +30,5 @@ let shellExecute cmd =
     executeProcess("cmd.exe", "/c \"" + cmd + "\"")
 
 let print (result: ProcessResult) =
+    result.stderr |> printfn "%s"
     result.output |> Array.iter (fun q ->  printfn "%s" q)

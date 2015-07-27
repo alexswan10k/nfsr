@@ -19,7 +19,6 @@ else
                     let join (arr: string[]) = System.String.Join(" ", arr)
                     let fullPath = Resolver.fsiPath + " " + m.Path
                     let target = "\""+ m.Path + "\" " + join (args |> Array.toSeq |> Seq.skip (headParams.Length + 1) |> Seq.toArray)
-                    printfn "%s" target
 
                     //Array.
                     let execute() = 
