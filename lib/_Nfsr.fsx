@@ -11,13 +11,13 @@ let private split (args: string[])=
                     |> Array.filter (fun q -> not (Option.isNone q))
                     |> Array.map (fun q -> Option.get q)
                     |> Array.sort
-                    |> Array.pairwise
+                    |> Array.toSeq |> Seq.pairwise
 
     [|for (a, b) in idxs ->
 //        printfn "(a, b) = (%s, %s)" (a.ToString()) (b.ToString())
 //        printfn "splitting at (%s, %s)" (a.ToString()) ((b - a).ToString())
-        args |> Array.skip (a+1)
-            |> Array.take (b - (a+1))
+        args |> Seq.skip (a+1)
+            |> Seq.take (b - (a+1)) |> Seq.toArray
         |]
         //Dont think we can filter here as this causes other problems
 //    |> Array.filter (fun q -> q.Length > 0)
@@ -26,7 +26,7 @@ let private split (args: string[])=
 
 let getHeadParams (args: string[]) = 
     split args
-        |> Array.head
+        |> Array.toSeq |> Seq.head
 
 let fn = Args.hasFor
 let g = Resolver.FileType.Fsx

@@ -113,8 +113,9 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                         match file with
                         | f when f.Name = "_References.fsx"   -> ()
                         | _ -> yield (categorizeByConvention(file), score) //penalise scripts not conforming to convention. These should resolve after scripts in bin
-                for d in Directory.EnumerateDirectories(path) do
-                    yield! getModules d (level + 1)
+                if path.Length < 240 then
+                    for d in Directory.EnumerateDirectories(path) do
+                        yield! getModules d (level + 1)
             }
     let modules = getModules path 0
                     |> Seq.sortBy(fun (file, level) -> level)
