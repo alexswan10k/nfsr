@@ -1,4 +1,8 @@
 open System.IO
+open System.Runtime.Serialization
+open System.Reflection
+open FSharp.Reflection
+#load "Cache.fsx"
 
 let globalBasePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData) + """\npm\node_modules\"""
 let localPath = System.Environment.CurrentDirectory//__SOURCE_DIRECTORY__ 
@@ -41,12 +45,14 @@ let getFsxFilesIn =
 //let getDirectoriesIn dir pattern =
 //    Directory.EnumerateDirectories(dir)
 
+[<KnownType("GetKnownTypes")>]
 type FileType =
     | Fsx 
     | Batch 
     | Shell 
     | Powershell 
-    //| All = 4   
+    static member GetKnownTypes =
+        Serialization.getKnownTypes<FileType>
 
 type ScriptFile =
     {
@@ -55,9 +61,15 @@ type ScriptFile =
         Path: string;
         Priority: int;
     }
+
+[<KnownType("GetKnownTypes")>]
 type ScriptRole =
     | Script of ScriptFile
     | Library of ScriptFile
+    static member GetKnownTypes =
+        Serialization.getKnownTypes<ScriptRole>
+
+let private globalCache = new Cache.CacheFileStore<ScriptRole[]>(System.TimeSpan.FromDays(3.0), globalBasePath + "\\nfsr\\nfsr.cache")
 
 let private getModules path (allowedTypes: FileType[]) isRecursive =
 
@@ -141,11 +153,19 @@ let getScriptOptions getModulesFn =
     seq {
         for f in getModulesFn true do
             match f with
-            | Script(path) -> yield path
+            | Script(file) -> yield file
             | _ -> ()
         }
 
-let getClosestMatch name (allowedTypes : FileType[]) =
+let getLibOptions getModulesFn =
+    seq {
+        for f in getModulesFn true do
+            match f with
+            | Library(file) -> yield file
+            | _ -> ()
+        }
+
+let private getClosestMatch getScriptOptions name (allowedTypes : FileType[]) =
     let seq = getScriptOptions (getLocals allowedTypes)
                 |> Seq.filter (fun q -> q.Path.Contains name)
     if not (Seq.isEmpty seq) then
@@ -157,3 +177,9 @@ let getClosestMatch name (allowedTypes : FileType[]) =
             Some (Seq.head seq)
         else
             None
+
+let getClosestScriptMatch =
+    getClosestMatch getScriptOptions
+
+let getClosestLibraryMatch =
+    getClosestMatch getLibOptions

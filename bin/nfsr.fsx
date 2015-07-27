@@ -12,7 +12,7 @@ else
     let allowedTypes = _Nfsr.getAllowedTypes (headParams)
 
     let cmatch = 
-        Resolver.getClosestMatch (args.[headParams.Length]) allowedTypes
+        Resolver.getClosestScriptMatch (args.[headParams.Length]) allowedTypes
 
     match cmatch with
     | Some(m) ->    

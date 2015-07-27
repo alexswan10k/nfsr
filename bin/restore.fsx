@@ -27,3 +27,4 @@ for f in getFolders dirName do
     | Paket(s) -> Process.shellExecute("cd " + s + "&& paket install") |> Process.print
     | Bower(s) -> Process.shellExecute("cd " + s + "&& bower install") |> Process.print
     
+//refresh dynamic refs

@@ -1,0 +1,10 @@
+Allows creation and management of dynamic references to libraries using the same resolution strategy as for scripts.
+
+Options are as follows:
+dynamic-refs
+	add <library>
+	remove <library>
+	refresh
+	
+A _DynamicReferences.txt will be created to store these reference. This may be checked in to source control.
+_DynamicReferences.fsx should be .gitignored or excluded from source control. 

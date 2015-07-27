@@ -10,7 +10,7 @@ printfn "allowed types: "
 allowedTypes |> Seq.iter (fun q -> printfn "%A" q)
 
 let cmatch = 
-    Resolver.getClosestMatch (args.[1]) allowedTypes
+    Resolver.getClosestScriptMatch (args.[1]) allowedTypes
 
 match cmatch with
 | Some(m) -> printfn "%s" cmatch.Value.Path
