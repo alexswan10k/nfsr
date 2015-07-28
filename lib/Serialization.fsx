@@ -1,4 +1,5 @@
 #r "System.Runtime.Serialization.dll"
+//#r "System.Web.Extensions"
 open System
 open Microsoft.FSharp.Reflection
 open System.IO
@@ -25,3 +26,11 @@ let deserializeJson<'a> (json : string) =
 let knownTypesForUnion<'a> =
     typedefof<'a>.GetNestedTypes(BindingFlags.Public ||| BindingFlags.NonPublic)
         |> Array.filter FSharpType.IsUnion
+
+//let serializeJson2<'a> (x: 'a) =
+//    let serializer = System.Web.Script.Serialization.JavaScriptSerializer()
+//    serializer.Serialize(x)
+//
+//let deserializeJson2<'a> (json : string) =
+//    let serializer = System.Web.Script.Serialization.JavaScriptSerializer()
+//    serializer.Deserialize<'a>(json)

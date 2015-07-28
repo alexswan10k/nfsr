@@ -177,18 +177,23 @@ type SearchPath =
 let searchPaths = 
     [
         { Path = localPath; AllowCache = false};
-        { Path = globalBasePath; AllowCache = false}
+        { Path = globalBasePath; AllowCache = true}
     ]
     |> List.toSeq
 
 let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> seq<ScriptFile>) =
         let getOrCreateCache cacheFileSuffix createFun = 
-            let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), globalBasePath + "\\nfsr"+cacheFileSuffix+".cache")
+            let cacheFile = globalBasePath + "\\nfsr\\nfsrcache"+cacheFileSuffix+".cache"
+            let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), cacheFile)
             if path.AllowCache then
                 let res = cache.GetOrCreate createFun
+                printfn "using cache %s for %A" cacheFile res
                 res.Item
             else
+                printfn "not using cache"
                 createFun()
+
+        //note this masks above fn. Temporary till serialization issue fixed
         let getOrCreateCache cacheFileSuffix createFun = createFun()
 
         let files = [|for t in allowedTypes ->
@@ -231,11 +236,13 @@ let getClosestLibraryMatch =
 //let s2 = Serialization.serializeJson {Name="file"; FileType=Fsx; Path="path";Priority=1}
 //Serialization.deserializeJson<ScriptFile>(s2)
 //let s3 = Serialization.serializeJson (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-//Serialization.deserializeJson<FileType>(s3)
-
+//Serialization.deserializeJson<ScriptRole>(s3)
 //
-//Serialization.serializeJson [|
-//    (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-//    (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-//    (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-//|]
+//
+//let s4 =
+//    Serialization.serializeJson [|
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+//    |]
+//Serialization.deserializeJson<array<ScriptRole>> s4
