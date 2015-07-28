@@ -187,10 +187,10 @@ let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> se
             let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), cacheFile)
             if path.AllowCache then
                 let res = cache.GetOrCreate createFun
-                printfn "using cache %s for %A" cacheFile res
+                //printfn "using cache %s for %A" cacheFile res
                 res.Item
             else
-                printfn "not using cache"
+                //printfn "not using cache"
                 createFun()
 
         //note this masks above fn. Temporary till serialization issue fixed

@@ -34,3 +34,14 @@ let knownTypesForUnion<'a> =
 //let deserializeJson2<'a> (json : string) =
 //    let serializer = System.Web.Script.Serialization.JavaScriptSerializer()
 //    serializer.Deserialize<'a>(json)
+
+let serializeByte<'a> (x: 'a) =
+    let bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+    use ms = new MemoryStream()
+    bf.Serialize(ms, x)
+    ms.GetBuffer()
+
+let deserializeByte<'a>(packet: byte[]) =
+    let bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+    use ms = new MemoryStream(packet)
+    bf.Deserialize(ms) |> unbox<'a>
