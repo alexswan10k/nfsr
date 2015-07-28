@@ -3,3 +3,6 @@ To execute a script type:
 nfsr %yourcommand%
 
 You do not need a .fsx suffix
+
+Parameters avaliable:
+	-l --lib > List libraries available to call in using dynamic-refs

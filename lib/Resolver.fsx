@@ -51,8 +51,17 @@ type FileType =
     | Batch 
     | Shell 
     | Powershell 
-    static member GetKnownTypes =
-        Serialization.getKnownTypes<FileType>
+    static member GetKnownTypes() =
+        Serialization.knownTypesForUnion<FileType>
+
+    override x.ToString() =
+        match x with
+        | Fsx -> "fsx"
+        | Batch -> "bat"
+        | Shell -> "sh"
+        | Powershell -> "ps1"
+
+
 
 type ScriptFile =
     {
@@ -66,12 +75,10 @@ type ScriptFile =
 type ScriptRole =
     | Script of ScriptFile
     | Library of ScriptFile
-    static member GetKnownTypes =
-        Serialization.getKnownTypes<ScriptRole>
+    static member GetKnownTypes() =
+        Serialization.knownTypesForUnion<ScriptRole>
 
-let private globalCache = new Cache.CacheFileStore<ScriptRole[]>(System.TimeSpan.FromDays(3.0), globalBasePath + "\\nfsr\\nfsr.cache")
-
-let private getModules path (allowedTypes: FileType[]) isRecursive =
+let private getModules path (allowedType: FileType) isRecursive =
 
     let getFilesIn path priority =
         let getFilesForExt path ext (fileType: FileType) =
@@ -83,15 +90,15 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                         Priority = priority
                     }
                 |]
-        let types = [|for t in allowedTypes ->
-                        match t with
-                        | FileType.Fsx -> getFilesForExt path "*.fsx" FileType.Fsx
-                        | FileType.Batch -> getFilesForExt path "*.bat" FileType.Batch
-                        | FileType.Shell -> getFilesForExt path "*.sh" FileType.Shell
-                        | FileType.Powershell -> getFilesForExt path "*.ps1" FileType.Powershell
-                        //| _ -> [||]
-                        |] 
-        types |> Array.collect (fun q -> q)
+        let fileGroups = [|for t in Seq.singleton allowedType ->
+                            match t with
+                            | FileType.Fsx -> getFilesForExt path "*.fsx" FileType.Fsx
+                            | FileType.Batch -> getFilesForExt path "*.bat" FileType.Batch
+                            | FileType.Shell -> getFilesForExt path "*.sh" FileType.Shell
+                            | FileType.Powershell -> getFilesForExt path "*.ps1" FileType.Powershell
+                            //| _ -> [||]
+                            |] 
+        fileGroups |> Array.collect (fun q -> q)
         //System.Linq.Enumerable.SelectMany(types, (fun s i -> s )
     let rec getModules path level =
         seq {   
@@ -104,7 +111,7 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                         Script(file)
 
                 let isToBeExcluded (script:ScriptFile) =
-                    script.Name = "_References.fsx" || script.Name = "_DynamicReferences.fsx"
+                    script.Name = "_References.fsx" || script.Name = "_DynamicReferences.fsx" || script.Name = "_DynamicReferences.lock"
 
                 match shortDirName with
                 //| t when t.Contains("lib")
@@ -145,44 +152,62 @@ let private getModules path (allowedTypes: FileType[]) isRecursive =
                 modules
     sortedModules |> Seq.map(fun (file, level) -> file)
 
-
-let getGlobals =
-    getModules globalBasePath
-
-let getLocals =
-    getModules localPath
-
-let getScriptOptions getModulesFn =
+let getScripts scriptRoles =
     seq {
-        for f in getModulesFn true do
+        for f in scriptRoles do
             match f with
             | Script(file) -> yield file
             | _ -> ()
         }
 
-let getLibOptions getModulesFn =
+let getLibraries scriptRoles =
     seq {
-        for f in getModulesFn true do
+        for f in scriptRoles do
             match f with
             | Library(file) -> yield file
             | _ -> ()
         }
 
+type SearchPath =
+    {
+        Path :string;
+        AllowCache: bool
+    }
+
 let searchPaths = 
     [
-        localPath;
-        globalBasePath
+        { Path = localPath; AllowCache = false};
+        { Path = globalBasePath; AllowCache = false}
     ]
     |> List.toSeq
 
+let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> seq<ScriptFile>) =
+        let getOrCreateCache cacheFileSuffix createFun = 
+            let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), globalBasePath + "\\nfsr"+cacheFileSuffix+".cache")
+            if path.AllowCache then
+                let res = cache.GetOrCreate createFun
+                res.Item
+            else
+                createFun()
+        let getOrCreateCache cacheFileSuffix createFun = createFun()
 
-let private getClosestMatch getScriptOptions name (allowedTypes : FileType[]) =
-    let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), globalBasePath + "\\nfsr.cache")
-    
-    let rec getClosestMatchRec (paths: seq<string>) =
+        let files = [|for t in allowedTypes ->
+                        let cache = getOrCreateCache (t.ToString())
+                                        (fun () -> 
+                                            let files = (getModules path.Path t true) |> Seq.toArray
+                                            //printfn "%A" files
+                                            files)
+                        cache
+                        |]
+                    |> Array.collect id
+        getOptionsFn (files |> Array.toSeq)
+
+let private getClosestMatch getOptionsFn name (allowedTypes : FileType[]) =
+
+    let rec getClosestMatchRec (paths: seq<SearchPath>) =
         let path = Seq.head paths
-        let seq = getScriptOptions ((getModules path) allowedTypes)
-                    |> Seq.filter (fun q -> q.Path.Contains name)
+        let options = getFiles path allowedTypes getOptionsFn
+        let seq = options |> Seq.filter (fun q -> q.Path.Contains name)
         if not (Seq.isEmpty seq) then
             Some (Seq.head seq)
         else
@@ -194,7 +219,23 @@ let private getClosestMatch getScriptOptions name (allowedTypes : FileType[]) =
     getClosestMatchRec searchPaths
 
 let getClosestScriptMatch =
-    getClosestMatch getScriptOptions
+    getClosestMatch getScripts
 
 let getClosestLibraryMatch =
-    getClosestMatch getLibOptions
+    getClosestMatch getLibraries
+
+
+//let s1 = Serialization.serializeJson FileType.Fsx
+//Serialization.deserializeJson<FileType>(s1)
+//
+//let s2 = Serialization.serializeJson {Name="file"; FileType=Fsx; Path="path";Priority=1}
+//Serialization.deserializeJson<ScriptFile>(s2)
+//let s3 = Serialization.serializeJson (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+//Serialization.deserializeJson<FileType>(s3)
+
+//
+//Serialization.serializeJson [|
+//    (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//    (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//    (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+//|]

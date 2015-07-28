@@ -6,5 +6,5 @@ dynamic-refs
 	remove <library>
 	refresh
 	
-A _DynamicReferences.txt will be created to store these reference. This may be checked in to source control.
+A _DynamicReferences.lock will be created to store these reference. This may be checked in to source control.
 _DynamicReferences.fsx should be .gitignored or excluded from source control. 

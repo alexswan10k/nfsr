@@ -6,7 +6,7 @@ open System.IO
 
 let args = Args.getArgs() |> Array.toSeq |> Seq.skip 1 |> Seq.toArray
 let allowedTypes = _Nfsr.getAllowedTypes (args)
-let path = Resolver.localPath + "\\DynamicReferences.txt"
+let path = Resolver.localPath + "\\_DynamicReferences.lock"
 let activePath = Resolver.localPath + "\\_DynamicReferences.fsx"
 
 let updateRefs (arr: array<string>) =

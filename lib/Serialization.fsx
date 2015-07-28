@@ -22,6 +22,6 @@ let deserializeJson<'a> (json : string) =
     use stream = new MemoryStream(toBytes json)
     jsonSerializer.ReadObject(stream) :?> 'a
 
-let getKnownTypes<'a>() =
+let knownTypesForUnion<'a> =
     typedefof<'a>.GetNestedTypes(BindingFlags.Public ||| BindingFlags.NonPublic)
         |> Array.filter FSharpType.IsUnion

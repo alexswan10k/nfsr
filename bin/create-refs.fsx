@@ -3,16 +3,9 @@
 open System
 open System.IO
 
-let private locals =
-    Resolver.getLocals [|Resolver.FileType.Fsx|] true
+let private scripts =
+    Resolver.getFiles ({Path= Resolver.localPath; AllowCache=false}) (Seq.singleton Resolver.FileType.Fsx) Resolver.getLibraries
 
-let scripts = seq {
-            for q in locals do
-                match q with
-                | Resolver.Library(file) -> 
-                    yield file
-                | _ -> ()
-    } 
 let recNo = 
     if Args.has "-r" then
         match Args.getFor "-r" (Args.getArgs()) with
