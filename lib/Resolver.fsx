@@ -1,7 +1,7 @@
 open System.IO
 open System.Runtime.Serialization
 open System.Reflection
-open FSharp.Reflection
+open Microsoft.FSharp.Reflection
 #load "Cache.fsx"
 
 let globalBasePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData) + """\npm\node_modules\"""
@@ -168,18 +168,30 @@ let getLibOptions getModulesFn =
             | _ -> ()
         }
 
+let searchPaths = 
+    [
+        localPath;
+        globalBasePath
+    ]
+    |> List.toSeq
+
+
 let private getClosestMatch getScriptOptions name (allowedTypes : FileType[]) =
-    let seq = getScriptOptions (getLocals allowedTypes)
-                |> Seq.filter (fun q -> q.Path.Contains name)
-    if not (Seq.isEmpty seq) then
-        Some (Seq.head seq)
-    else
-        let seq = getScriptOptions (getGlobals allowedTypes)
+    let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), globalBasePath + "\\nfsr.cache")
+    
+    let rec getClosestMatchRec (paths: seq<string>) =
+        let path = Seq.head paths
+        let seq = getScriptOptions ((getModules path) allowedTypes)
                     |> Seq.filter (fun q -> q.Path.Contains name)
         if not (Seq.isEmpty seq) then
             Some (Seq.head seq)
         else
-            None
+            if Seq.length paths > 1 then
+                getClosestMatchRec (Seq.skip 1 paths)
+            else
+                None
+
+    getClosestMatchRec searchPaths
 
 let getClosestScriptMatch =
     getClosestMatch getScriptOptions
