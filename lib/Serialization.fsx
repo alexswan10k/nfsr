@@ -11,14 +11,18 @@ open System.Runtime.Serialization.Json
 let toString = System.Text.Encoding.ASCII.GetString
 let toBytes (x : string) = System.Text.Encoding.ASCII.GetBytes x
 let serializeJson<'a> (x : 'a) = 
-    let jsonSerializer = new DataContractJsonSerializer(typedefof<'a>)
+    let settings = new DataContractJsonSerializerSettings()
+    settings.IgnoreExtensionDataObject <- true
+    let jsonSerializer = new DataContractJsonSerializer(typedefof<'a>, settings)
 
     use stream = new MemoryStream()
     jsonSerializer.WriteObject(stream, x)
     toString <| stream.ToArray()
 
 let deserializeJson<'a> (json : string) =
-    let jsonSerializer = new DataContractJsonSerializer(typedefof<'a>)
+    let settings = new DataContractJsonSerializerSettings()
+    settings.IgnoreExtensionDataObject <- true
+    let jsonSerializer = new DataContractJsonSerializer(typedefof<'a>, settings)
 
     use stream = new MemoryStream(toBytes json)
     jsonSerializer.ReadObject(stream) :?> 'a

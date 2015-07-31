@@ -46,6 +46,7 @@ let getFsxFilesIn =
 //    Directory.EnumerateDirectories(dir)
 
 [<KnownType("GetKnownTypes")>]
+[<DataContract(Name="FileType", Namespace = "")>]
 type FileType =
     | Fsx 
     | Batch 
@@ -62,7 +63,7 @@ type FileType =
         | Powershell -> "ps1"
 
 
-
+[<DataContract(Name="ScriptFile", Namespace = "")>]
 type ScriptFile =
     {
         FileType: FileType;
@@ -72,6 +73,7 @@ type ScriptFile =
     }
 
 [<KnownType("GetKnownTypes")>]
+[<DataContract(Name="ScriptRole", Namespace = "")>]
 type ScriptRole =
     | Script of ScriptFile
     | Library of ScriptFile
@@ -194,7 +196,7 @@ let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> se
                 createFun()
 
         //note this masks above fn. Temporary till serialization issue fixed
-        let getOrCreateCache cacheFileSuffix createFun = createFun()
+        //let getOrCreateCache cacheFileSuffix createFun = createFun()
 
         let files = [|for t in allowedTypes ->
                         let cache = getOrCreateCache (t.ToString())
@@ -205,7 +207,11 @@ let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> se
                         cache
                         |]
                     |> Array.collect id
-        getOptionsFn (files |> Array.toSeq)
+        let res = getOptionsFn (files |> Array.toSeq)
+//        let cacheFile = globalBasePath + "\\nfsr\\nfsrtest.cache"
+//        let cache = new Cache.CacheFileStore<array<ScriptFile>>(System.TimeSpan.FromDays(3.0), cacheFile)
+//        cache.Overwrite (fun () -> (res |> Seq.toArray)) |> ignore
+        res
 
 let private getClosestMatch getOptionsFn name (allowedTypes : FileType[]) =
 
@@ -235,14 +241,27 @@ let getClosestLibraryMatch =
 //
 //let s2 = Serialization.serializeJson {Name="file"; FileType=Fsx; Path="path";Priority=1}
 //Serialization.deserializeJson<ScriptFile>(s2)
-//let s3 = Serialization.serializeJson (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-//Serialization.deserializeJson<ScriptRole>(s3)
-//
-//
-//let s4 =
-//    Serialization.serializeJson [|
-//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-//    |]
-//Serialization.deserializeJson<array<ScriptRole>> s4
+let s3 = Serialization.serializeJson (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+Serialization.deserializeJson<ScriptRole>(s3)
+
+
+let s4 =
+    Serialization.serializeJson [|
+        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+    |]
+Serialization.deserializeJson<array<ScriptRole>> s4
+
+
+let s4t = [|
+        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+    |]
+
+let string = sprintf "%A" s4t
+let quoted = <@@ string @@>
+
+
+//Microsoft.FSharp.Compiler.Interactive.
