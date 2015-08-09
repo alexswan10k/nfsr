@@ -1,0 +1,3 @@
+A tool for distilling projects into a single file fsx runnable script
+options:
+	--target-project:<path-to-project>
