@@ -5,13 +5,13 @@ open System.Text.RegularExpressions
 
 type ProcessResult = { exitCode : int; stdout : string; stderr : string; output: string[] }
 
-let executeProcess (exe,args) =
+let executeProcessFrom(exe, args, path) =
     let psi = new System.Diagnostics.ProcessStartInfo(exe,args) 
     psi.UseShellExecute <- false
     psi.RedirectStandardOutput <- true
     psi.RedirectStandardError <- true
     psi.CreateNoWindow <- true        
-    //psi.WorkingDirectory <- System.Environment.CurrentDirectory
+    psi.WorkingDirectory <- path
     let p = System.Diagnostics.Process.Start(psi) 
     let output = new System.Text.StringBuilder()
     let outputList = new System.Collections.Generic.List<string>();
@@ -25,6 +25,8 @@ let executeProcess (exe,args) =
     p.BeginOutputReadLine()
     p.WaitForExit()
     { exitCode = p.ExitCode; stdout = output.ToString(); stderr = error.ToString(); output = outputList.ToArray() }
+let executeProcess (exe,args) =
+    executeProcessFrom(exe, args, System.Environment.CurrentDirectory)
 
 let shellExecute cmd =
     executeProcess("cmd.exe", "/c \"" + cmd + "\"")

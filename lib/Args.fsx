@@ -1,5 +1,11 @@
 let getArgs() =
+    #if INTERACTIVE
     let args = fsi.CommandLineArgs
+    #else
+    let args = System.Environment.GetCommandLineArgs()
+    #endif
+//    printfn "there are %A args.." args.Length
+//    printfn "%A" args
     args
 
 let hasFor arg (args:string[]) =

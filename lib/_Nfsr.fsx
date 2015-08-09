@@ -25,8 +25,11 @@ let private split (args: string[])=
 //split [|"-r"; "-f"; "tim-script"; "-x" ; "-y:14"; "rat"; "-z:gggg"; "n:fsrR"; "je"; "innit"; "-paramLast"|]
 
 let getHeadParams (args: string[]) = 
-    split args
-        |> Array.toSeq |> Seq.head
+    if args.Length = 0 then
+        Array.empty
+    else
+        split args
+            |> Array.toSeq |> Seq.head
 
 let fn = Args.hasFor
 let g = Resolver.FileType.Fsx

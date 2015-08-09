@@ -1,11 +1,12 @@
 #load "..\lib\Process.fsx"
 #load "..\lib\_Nfsr.fsx"
-
+if Args.has "-pr" then
+    printfn "started %A" System.DateTime.Now
 open System.IO
 
 let args = Args.getArgs() |> Seq.skip 1 |> Seq.toArray
 
-if args.Length < 2 || args.[0] = "-h" || args.[0] = "--help" then
+if args.Length < 1 || args.[0] = "-h" || args.[0] = "--help" then
     File.ReadAllText(Resolver.globalBasePath + "\\nfsr\\bin\\nfsr.txt") |> printfn "%s"
 else
     let headParams = _Nfsr.getHeadParams (args)
@@ -18,12 +19,17 @@ else
     | Some(m) ->    
                     let join (arr: string[]) = System.String.Join(" ", arr)
                     let fullPath = Resolver.fsiPath + " " + m.Path
-                    let target = "\""+ m.Path + "\" " + join (args |> Array.toSeq |> Seq.skip (headParams.Length + 1) |> Seq.toArray)
+                    let joinedArgs = join (args |> Array.toSeq |> Seq.skip (headParams.Length + 1) |> Seq.toArray)
+                    let target = "\""+ m.Path + "\" " + joinedArgs
 
                     //Array.
                     let execute() = 
                         if m.FileType = Resolver.FileType.Fsx then
-                            Process.executeProcess(Resolver.fsiPath, target) |> Process.print
+                            if File.Exists(m.Path.Replace(".fsx", ".exe")) then
+                                printfn "using compiled exe instead"
+                                Process.executeProcess(m.Path.Replace(".fsx", ".exe"), joinedArgs) |> Process.print
+                            else
+                                Process.executeProcess(Resolver.fsiPath, target) |> Process.print
                         else if m.FileType = Resolver.FileType.Powershell then
                             Process.executeProcess(Resolver.powershellPath, "-ExecutionPolicy Bypass -File "+ target) |> Process.print
                             //Process.shellExecute("powershell -ExecutionPolicy Bypass -File "+ target) |> Process.print
@@ -46,3 +52,5 @@ else
                 
 
     | none -> printfn "no match"
+if Args.has "-pr" then
+    printfn "finished %A" System.DateTime.Now

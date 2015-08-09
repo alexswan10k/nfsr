@@ -3,6 +3,7 @@ open System.Runtime.Serialization
 open System.Reflection
 open Microsoft.FSharp.Reflection
 #load "Cache.fsx"
+//#load "Ext/SharpXml.fsx"
 
 let globalBasePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData) + """\npm\node_modules\"""
 let localPath = System.Environment.CurrentDirectory//__SOURCE_DIRECTORY__ 
@@ -45,15 +46,15 @@ let getFsxFilesIn =
 //let getDirectoriesIn dir pattern =
 //    Directory.EnumerateDirectories(dir)
 
-[<KnownType("GetKnownTypes")>]
-[<DataContract(Name="FileType", Namespace = "")>]
+//[<KnownType("GetKnownTypes")>]
+//[<DataContract(Name="FileType", Namespace = "")>]
 type FileType =
     | Fsx 
     | Batch 
     | Shell 
     | Powershell 
-    static member GetKnownTypes() =
-        Serialization.knownTypesForUnion<FileType>
+//    static member GetKnownTypes() =
+//        Serialization.knownTypesForUnion<FileType>
 
     override x.ToString() =
         match x with
@@ -63,7 +64,7 @@ type FileType =
         | Powershell -> "ps1"
 
 
-[<DataContract(Name="ScriptFile", Namespace = "")>]
+//[<DataContract(Name="ScriptFile", Namespace = "")>]
 type ScriptFile =
     {
         FileType: FileType;
@@ -72,13 +73,13 @@ type ScriptFile =
         Priority: int;
     }
 
-[<KnownType("GetKnownTypes")>]
-[<DataContract(Name="ScriptRole", Namespace = "")>]
+//[<KnownType("GetKnownTypes")>]
+//[<DataContract(Name="ScriptRole", Namespace = "")>]
 type ScriptRole =
     | Script of ScriptFile
     | Library of ScriptFile
-    static member GetKnownTypes() =
-        Serialization.knownTypesForUnion<ScriptRole>
+//    static member GetKnownTypes() =
+//        Serialization.knownTypesForUnion<ScriptRole>
 
 let private getModules path (allowedType: FileType) isRecursive =
 
@@ -184,19 +185,36 @@ let searchPaths =
     |> List.toSeq
 
 let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> seq<ScriptFile>) =
-        let getOrCreateCache cacheFileSuffix createFun = 
-            let cacheFile = globalBasePath + "\\nfsr\\nfsrcache"+cacheFileSuffix+".cache"
-            let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), cacheFile)
-            if path.AllowCache then
-                let res = cache.GetOrCreate createFun
-                //printfn "using cache %s for %A" cacheFile res
-                res.Item
-            else
-                //printfn "not using cache"
-                createFun()
+//        let getOrCreateCache cacheFileSuffix createFun = 
+//
+//            let hackySerialize (cache: Cache.Cache<ScriptRole[]>) =
+//                let hackySerialize (items: ScriptRole[]) =
+//                    let inner = 
+//                        [|for sr in items ->
+//                            SharpXml.XmlSerializer.SerializeToString(sr)|]
+//                    SharpXml.XmlSerializer.SerializeToString(inner)
+//                SharpXml.XmlSerializer.SerializeToString {Cache.Cache.Item = (hackySerialize cache.Item); Cache.Cache.Expiry = cache.Expiry}
+//
+//            let hackyDeserialize (txt: string) =
+//                let hackyDeserialize (txt: string) =    
+//                    let arr = SharpXml.XmlSerializer.DeserializeFromString<array<string>>(txt)
+//                    [|for item in arr ->
+//                        SharpXml.XmlSerializer.DeserializeFromString<ScriptRole>(item)|]
+//                let cache = SharpXml.XmlSerializer.DeserializeFromString<Cache.Cache<string>>(txt)
+//                {Cache.Cache.Item = (hackyDeserialize cache.Item); Cache.Cache.Expiry = cache.Expiry}
+//
+//            let cacheFile = globalBasePath + "\\nfsr\\nfsrcache"+cacheFileSuffix+".cache"
+//            let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), Store.FileStore(cacheFile, hackySerialize, hackyDeserialize))
+//            if path.AllowCache then
+//                let res = cache.GetOrCreate createFun
+//                //printfn "using cache %s for %A" cacheFile res
+//                res.Item
+//            else
+//                //printfn "not using cache"
+//                createFun()
 
         //note this masks above fn. Temporary till serialization issue fixed
-        //let getOrCreateCache cacheFileSuffix createFun = createFun()
+        let getOrCreateCache cacheFileSuffix createFun = createFun()
 
         let files = [|for t in allowedTypes ->
                         let cache = getOrCreateCache (t.ToString())
@@ -218,7 +236,7 @@ let private getClosestMatch getOptionsFn name (allowedTypes : FileType[]) =
     let rec getClosestMatchRec (paths: seq<SearchPath>) =
         let path = Seq.head paths
         let options = getFiles path allowedTypes getOptionsFn
-        let seq = options |> Seq.filter (fun q -> q.Path.Contains name)
+        let seq = options |> Seq.filter (fun q -> q.Name.Contains name)
         if not (Seq.isEmpty seq) then
             Some (Seq.head seq)
         else
@@ -241,27 +259,75 @@ let getClosestLibraryMatch =
 //
 //let s2 = Serialization.serializeJson {Name="file"; FileType=Fsx; Path="path";Priority=1}
 //Serialization.deserializeJson<ScriptFile>(s2)
-let s3 = Serialization.serializeJson (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-Serialization.deserializeJson<ScriptRole>(s3)
+//let s3 = Serialization.serializeJson (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+//Serialization.deserializeJson<ScriptRole>(s3)
+//
+//
+//let s4 =
+//    Serialization.serializeJson [|
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+//    |]
+//Serialization.deserializeJson<array<ScriptRole>> s4
+//
+//
+//let s4t = [|
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
+//    |]
+//
+//let string = sprintf "%A" s4t
+//let quoted = <@@ string @@>
 
+//let s5 = 
+//       [| (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
+//        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1})) |]
+//
+//
+//type Guest(id : int) =
+//
+//    let mutable firstName = Unchecked.defaultof<string>
+//    let mutable lastName = Unchecked.defaultof<string>
+//
+//    member x.FirstName
+//        with get() = firstName
+//        and set v = firstName <- v
+//    member x.LastName
+//        with get() = lastName
+//        and set v = lastName <- v
+//    member x.Id
+//        with get() = id
 
-let s4 =
-    Serialization.serializeJson [|
-        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-    |]
-Serialization.deserializeJson<array<ScriptRole>> s4
-
-
-let s4t = [|
-        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-        (Library({Name="file"; FileType=Fsx; Path="path";Priority=1}));
-        (Script({Name="file"; FileType=Fsx; Path="path";Priority=1}))
-    |]
-
-let string = sprintf "%A" s4t
-let quoted = <@@ string @@>
-
-
+//SharpXml.XmlSerializer.SerializeToString(s5)
+//
+//let arrayList = System.Collections.ArrayList()
+//arrayList.Add((Script({Name="file"; FileType=Fsx; Path="path";Priority=1})))
+//arrayList.Add((Script({Name="file"; FileType=Fsx; Path="path";Priority=1})))
+//arrayList.Add((Script({Name="file"; FileType=Fsx; Path="path";Priority=1})))
+//
+//let str = SharpXml.XmlSerializer.SerializeToString(arrayList)
+//
+//let newList = SharpXml.XmlSerializer.DeserializeFromString<System.Collections.Generic.List<ScriptRole>>(str)
+//
+//
+//let singleThing = SharpXml.XmlSerializer.SerializeToString((Script({Name="file"; FileType=Fsx; Path="path";Priority=1})))
+//let sres = SharpXml.XmlSerializer.DeserializeFromString<ScriptRole>(singleThing)
+//
+//
+//let hackySerialize (items: ScriptRole[]) =
+//    let inner = 
+//        [|for sr in items ->
+//            SharpXml.XmlSerializer.SerializeToString(sr)|]
+//    SharpXml.XmlSerializer.SerializeToString(inner)
+//
+//let hackyDeserialize (txt: string) =    
+//    let arr = SharpXml.XmlSerializer.DeserializeFromString<array<string>>(txt)
+//    [for item in arr ->
+//        SharpXml.XmlSerializer.DeserializeFromString<ScriptRole>(item)]
+//
+//let someText = hackySerialize s5
+//let res = hackyDeserialize someText
 //Microsoft.FSharp.Compiler.Interactive.

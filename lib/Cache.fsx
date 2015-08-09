@@ -8,8 +8,8 @@ type Cache<'a> =
         Expiry: DateTime
     }
 
-type CacheFileStore<'a>(expiry: TimeSpan, path) =
-    let store = Store.FileStore<Cache<'a>>(path)
+type CacheFileStore<'a>(expiry: TimeSpan, store: Store.FileStore<Cache<'a>>) =
+    //let store = Store.FileStore<Cache<'a>>(path)
     let buildCache (buildItem : unit -> 'a) () = 
         {
             Item = buildItem();
