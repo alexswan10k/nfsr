@@ -55,21 +55,54 @@ let aggregateTokens tokens =
 let p = Tokenizer.tokenize str
 aggregateTokens p
 
-let parser<'t> aggregatedTokens =
-    
-    let build (t:System.Type) (args : obj[]) =
-        System.Activator.CreateInstance(t, args)
-        
-//    let findType = function
-//        | "array" -> typedefof<array<_>>
-//        | name -> 
-//        | _ -> failwith "rats"
-//        typedefof<'t>
-    let rec parser' acc = function
-        | Array(stuff) :: t -> 
-            let acc', t' = parser' [] stuff
-            acc, t
-        | _ -> failwith "oh dear"
-    parser' aggregatedTokens |> ignore
-    
-    ()
+//let parser<'t> (aggregatedTokens : List<AggregatedToken>) =
+//    
+//    let build (t:System.Type) (args : obj[]) =
+//        System.Activator.CreateInstance(t, args)
+//        
+//
+////    let findType = function
+////        | "array" -> typedefof<array<_>>
+////        | name -> 
+////        | _ -> failwith "rats"
+////        typedefof<'t>
+//    let rec parser' acc = function
+//        | Array(stuff) :: t -> 
+//            let acc', t' = parser' [] stuff
+//            acc, t
+//        | _ -> failwith "oh dear"
+//    parser' aggregatedTokens |> ignore
+//    ()
+
+let anotherParser<'t> (token : AggregatedToken) =
+
+    let wrapperType = typedefof<'t>
+
+    let getGenericTypeParam (wrapperType: System.Type) =
+        if wrapperType.IsGenericType then
+            Some(wrapperType.GetGenericArguments().[0])
+        else
+            None
+
+    let rec parser' acc tokens ttype =
+        match tokens with
+        | Array(tokens) :: t -> 
+            let nType = getGenericTypeParam ttype
+            if (not (wrapperType = typedefof<array<_>>) || nType.IsNone) then
+                failwith "types do not match requested types"
+            
+            parser' acc tokens nType.Value
+        | _ :: t -> acc, t
+        | _ -> failwith "error"
+
+    parser' [] [token] wrapperType
+
+
+//
+//    match token with
+//    | Array(tokens) -> 
+//        if (not (wrapperType = typedefof<array<_>>)) then
+//            failwith "types do not match requested types"
+//        
+//        let arr = System.Activator.CreateInstance(wrapperType) :?> 't   //inject stuff
+//        arr
