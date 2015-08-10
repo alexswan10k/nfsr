@@ -30,7 +30,7 @@ let data =
     else [||]
 
 match args with
-| [|"add"; libName; _|] -> 
+| [|"add"; libName|] -> 
 
     let dataUpdated = 
         if not (data |> Array.exists (fun q -> q = libName)) then
@@ -41,7 +41,7 @@ match args with
         else data
     updateRefs dataUpdated
 
-| [|"remove"; libName; _|] -> 
+| [|"remove"; libName|] -> 
     let dataUpdated = 
         let newArr = data |> Array.filter (fun q -> not(q = libName))
         File.WriteAllLines(path, newArr)
@@ -49,7 +49,7 @@ match args with
         newArr
     updateRefs dataUpdated
 
-| [|"refresh"; _|] -> 
+| [|"refresh"|] -> 
     updateRefs data
     ()
 | _ -> printfn "no action taken"

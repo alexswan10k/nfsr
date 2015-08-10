@@ -21,7 +21,7 @@ let hasFor arg (args:string[]) =
 let has (arg:string) =
     getArgs() |> hasFor arg
 
-let hasSequence (args: string[]) =
+let contains (args: string[]) =
     let hasSubsequence (subSequence: seq<'a>) (mainSequence: seq<'a>) =     
         let rec traverseSeq seq = 
             if Seq.length seq > 0 then
