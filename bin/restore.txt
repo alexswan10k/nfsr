@@ -1,0 +1,6 @@
+Recursively walks all local paths looking for:
+	paket.dependencies
+	bower.json
+	_DynamicReferences.lock
+
+For each of these the appropriate restore/refresh command will be executed.

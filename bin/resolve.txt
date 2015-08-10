@@ -1,0 +1,9 @@
+Allows the execution path of an executable script to be resolved
+
+Options:
+resolve
+	<path>
+		-f Fsharp
+		-b Batch files
+		-p Powershell ps1 scripts
+		-s Shell scripts

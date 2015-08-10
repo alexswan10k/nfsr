@@ -1,0 +1,5 @@
+Compiles the target script to an executable. This will then be used in preference to a .fsx file.
+
+
+compile
+	<script>	

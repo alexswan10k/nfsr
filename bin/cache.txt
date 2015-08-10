@@ -1,0 +1,5 @@
+Allows you to clear out the cache
+
+Options:
+cache
+	clear
