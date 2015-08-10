@@ -1,9 +1,10 @@
 {
   "name": "nfsr",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "",
   "main": "index.js",
   "scripts": {
+    "postinstall" : "nfsr compile --all-internal",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
