@@ -21,6 +21,23 @@ let hasFor arg (args:string[]) =
 let has (arg:string) =
     getArgs() |> hasFor arg
 
+let hasSequence (args: string[]) =
+    let hasSubsequence (subSequence: seq<'a>) (mainSequence: seq<'a>) =     
+        let rec traverseSeq seq = 
+            if Seq.length seq > 0 then
+                let subsequenceMatches = 
+                    Seq.zip subSequence seq
+                        |> Seq.forall(fun (a,b) -> a = b)
+
+                if subsequenceMatches then
+                    subsequenceMatches
+                else
+                    traverseSeq (seq |> Seq.tail)
+            else
+                false
+        traverseSeq mainSequence
+    getArgs() |> hasSubsequence (args |> Array.toSeq)
+
 let getFor arg (args: string[]) =
     let firstMatch = 
         [for a in args ->
