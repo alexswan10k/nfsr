@@ -1,0 +1,1 @@
+nfsr compile --all-internal

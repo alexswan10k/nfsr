@@ -32,7 +32,7 @@ let contains (args: string[]) =
                 if subsequenceMatches then
                     subsequenceMatches
                 else
-                    traverseSeq (seq |> Seq.tail)
+                    traverseSeq (seq |> Seq.toList |> List.tail |> List.toSeq)
             else
                 false
         traverseSeq mainSequence
