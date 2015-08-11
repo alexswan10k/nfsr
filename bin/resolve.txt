@@ -7,3 +7,5 @@ resolve
 		-b Batch files
 		-p Powershell ps1 scripts
 		-s Shell scripts
+
+		-l or --lib		Gets the closest library file match to be used with dynamic-refs or self referenced
