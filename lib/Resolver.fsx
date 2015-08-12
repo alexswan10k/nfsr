@@ -8,6 +8,7 @@ open Microsoft.FSharp.Reflection
 
 let globalBasePath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData) + """\npm\node_modules\"""
 let localPath = System.Environment.CurrentDirectory//__SOURCE_DIRECTORY__ 
+let private configPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile)
 
 let private fsharpPath = 
     let px86 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86)
@@ -183,12 +184,35 @@ type SearchPath =
         AllowCache: bool
     }
 
-let searchPaths = 
-    [
-        { Path = localPath; AllowCache = false};
-        { Path = globalBasePath; AllowCache = true}
-    ]
-    |> List.toSeq
+let searchPaths =
+    let serialize (list: list<SearchPath>) =
+        let XElement(name, content) = new XElement(XName.Get name, Seq.toArray content)
+        let XAttribute(name, value) = new XAttribute(XName.Get name, value)
+        let toObjArr arr = System.Linq.Enumerable.Cast<obj>(arr)
+        XElement("Config",
+            [for path in list ->
+                XElement("SearchPath",
+                    [
+                        XElement("Path", [path.Path])
+                        XElement("AllowCache", [path.AllowCache])
+                    ]
+                    )
+                ] |> toObjArr
+            ).ToString()
+
+    let deserialize (s : string) =
+        let xn name = XName.Get name
+        let xd = XDocument.Parse(s)
+        [
+            for p in xd.Element(xn "Config").Elements(xn "SearchPath") ->
+                {Path = p.Element(xn "Path").Value; AllowCache = bool.Parse(p.Element(xn "AllowCache").Value)}
+        ]
+
+    let store = Store.FileStore<list<SearchPath>>(configPath + """\nfsr.config""",serialize, deserialize)
+    
+    let storePaths = store.GetOrCreate(fun() -> [{ Path = globalBasePath; AllowCache = true}])
+    let allPaths = { Path = localPath; AllowCache = false}::storePaths
+    allPaths |> List.toSeq
 
 let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> seq<ScriptFile>) =
         let getOrCreateCache cacheFileSuffix createFun = 
@@ -240,7 +264,7 @@ let getFiles (path:SearchPath) allowedTypes (getOptionsFn: seq<ScriptRole> -> se
                     Cache.Expiry = System.DateTime.Parse(xd.Element(xn "Cache").Element(xn "Expiry").Value)
                 }
 
-            let cacheFile = globalBasePath + "\\nfsr\\nfsrcache"+cacheFileSuffix+".cache"
+            let cacheFile = globalBasePath + "\\nfsr\\"+cacheFileSuffix + path.GetHashCode().ToString() + ".cache"
             let cache = new Cache.CacheFileStore<array<ScriptRole>>(System.TimeSpan.FromDays(3.0), Store.FileStore(cacheFile, hackySerialize, hackyDeserialize))
             if path.AllowCache then
                 let res = cache.GetOrCreate createFun

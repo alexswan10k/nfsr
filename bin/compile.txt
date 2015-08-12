@@ -2,5 +2,6 @@ Compiles the target script to an executable. This will then be used in preferenc
 
 
 compile
+	<somefile.fsx>
 	<script>	
 	--all-internal : Creates exe's of all internal/global fsx scripts 
