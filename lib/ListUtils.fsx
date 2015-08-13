@@ -1,5 +1,5 @@
 let elementsAfter compareList list =
-    let compareSeq = compareList |> List.toSeq |> Seq.rev
+    let compareSeq = compareList |> List.rev |> List.toSeq
     let rec walk l =
         match l with
         | a::x -> 
@@ -13,7 +13,9 @@ let elementsAfter compareList list =
                 walk x
         | _ -> None
     match walk (list |> List.rev) with
-    | Some(length) -> List.skip length list
+    | Some(length) -> 
+        //List.skip length list
+        list |> List.toSeq |> Seq.skip length |> Seq.toList
     | None -> []
 
 let (|ElementsAfter|) compareList list =
