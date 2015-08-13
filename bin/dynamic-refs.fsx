@@ -17,11 +17,18 @@ let updateRefs (arr: array<string>) =
             //updateReferenceFor r
             match Resolver.getClosestLibraryMatch (r) allowedTypes with
             | Some(file) -> 
-                yield file.Path
+                printfn "%A" file
+                yield file
             | None -> ()
             |]
     let res = fetchReferences arr 
-                |> Array.map (fun q -> "#load \"\"\"" + q + "\"\"\"")
+                |> Array.map (fun q -> 
+                                if q.FileType = Resolver.FileType.Fsx then
+                                    "#load \"\"\"" + q.Path + "\"\"\""
+                                else if q.FileType = Resolver.FileType.Dll then
+                                    "#r \"\"\"" + q.Path + "\"\"\""
+                                else ""
+                             )
     printfn "updating references file from lock file"
     File.WriteAllLines(activePath, res)
     printfn "writing %s %A" lockPath res

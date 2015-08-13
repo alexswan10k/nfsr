@@ -55,6 +55,7 @@ type FileType =
     | Batch 
     | Shell 
     | Powershell 
+    | Dll
 //    static member GetKnownTypes() =
 //        Serialization.knownTypesForUnion<FileType>
     static member fromString = function
@@ -62,6 +63,7 @@ type FileType =
         | "bat" -> Batch
         | "sh" -> Shell
         | "ps1" -> Powershell;
+        | "dll" -> Dll;
         | _ -> failwith "unknown"
     override x.ToString() =
         match x with
@@ -69,6 +71,7 @@ type FileType =
         | Batch -> "bat"
         | Shell -> "sh"
         | Powershell -> "ps1"
+        | Dll -> "dll"
 
 
 //[<DataContract(Name="ScriptFile", Namespace = "")>]
@@ -106,6 +109,7 @@ let private getModules path (allowedType: FileType) isRecursive =
                             | FileType.Batch -> getFilesForExt path "*.bat" FileType.Batch
                             | FileType.Shell -> getFilesForExt path "*.sh" FileType.Shell
                             | FileType.Powershell -> getFilesForExt path "*.ps1" FileType.Powershell
+                            | FileType.Dll -> getFilesForExt path "*.dll" FileType.Dll
                             //| _ -> [||]
                             |] 
         fileGroups |> Array.collect (fun q -> q)
@@ -115,7 +119,7 @@ let private getModules path (allowedType: FileType) isRecursive =
                 let shortDirName = Path.GetFileName(path)
 
                 let categorizeByConvention (file : ScriptFile) =
-                    if file.Name.Contains("lib.") || file.Name.StartsWith("lib") || file.Path.Contains("lib") then
+                    if file.Name.Contains("lib.") || file.Name.StartsWith("lib") || file.Path.Contains("lib") || file.FileType = FileType.Dll then
                         Library(file)
                     else
                         Script(file)

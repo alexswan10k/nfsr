@@ -39,12 +39,15 @@ let getAllowedTypes args =
             let has arg = Args.hasFor arg args
             if has "-a" then
                 yield Resolver.FileType.Fsx
+                yield Resolver.FileType.Dll
                 yield Resolver.FileType.Batch
                 yield Resolver.FileType.Powershell
                 yield Resolver.FileType.Shell
             else
                 if has "-f" then
                     yield Resolver.FileType.Fsx
+                if has "-d" || has "--dll" then
+                    yield Resolver.FileType.Dll
                 if has "-b" then
                     yield Resolver.FileType.Batch
                 if has "-p" then
@@ -54,7 +57,10 @@ let getAllowedTypes args =
         }
     let res = 
         if outSeq |> Seq.length = 0 then
-            Seq.singleton Resolver.FileType.Fsx
+            seq {   
+                    yield Resolver.FileType.Fsx
+                    yield Resolver.FileType.Dll
+                }
         else
             outSeq
         |> Seq.toArray
