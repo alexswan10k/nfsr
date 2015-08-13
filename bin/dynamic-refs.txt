@@ -2,9 +2,10 @@ Allows creation and management of dynamic references to libraries using the same
 
 Options are as follows:
 dynamic-refs
-	add <library>
-	remove <library>
-	refresh
+	add <library>			Adds the library to the lock file and refreshes
+	remove <library>		Removes the library from the lock file and refreshes
+	refresh					Refreshes the refs^.fsx  file from the .lock file
+	clean					Removes both refs and lock files
 	
 A _DynamicReferences.lock will be created to store these reference. This may be checked in to source control.
 _DynamicReferences.fsx should be .gitignored or excluded from source control. 

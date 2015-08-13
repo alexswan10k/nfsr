@@ -1,5 +1,6 @@
-#load "Resolver.fsx"
-#load "Args.fsx"
+#load "Nfsr.Resolver.fsx"
+#load "Nfsr.Args.fsx"
+open Nfsr
 
 let private split (args: string[])=
     let isDashedArg (arg:string) =

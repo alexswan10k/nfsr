@@ -1,8 +1,9 @@
-#load "..\lib\Resolver.fsx"
-#load "..\lib\Process.fsx"
-#load "..\lib\Args.fsx"
+#load "..\lib\Nfsr.Resolver.fsx"
+#load "..\lib\Nfsr.Process.fsx"
+#load "..\lib\Nfsr.Args.fsx"
 //Experimental
 //see http://softwareblog.morlok.net/2008/07/05/f-compiler-fscexe-command-line-options/
+open Nfsr
 open System.IO
 
 let private compileScriptToExe (file: Resolver.ScriptFile) =

@@ -1,6 +1,7 @@
-#load "..\lib\Args.fsx"
+#load "..\lib\Nfsr.Args.fsx"
 
 open System.IO
+open Nfsr
 //add library > Searches global and local for library.
 //restore > restores je
 

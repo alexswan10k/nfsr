@@ -1,9 +1,10 @@
-#load "..\..\lib\Args.fsx"
+#load "..\..\lib\Nfsr.Args.fsx"
 #r "System.Core.dll"
 #r "System.Xml.Linq.dll"
-open System.Xml.Linq
 
+open System.Xml.Linq
 open System.IO
+open Nfsr
 
 let private rootPath path = 
     if Path.IsPathRooted(path) then

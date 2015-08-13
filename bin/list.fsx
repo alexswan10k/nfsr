@@ -1,4 +1,5 @@
-#load "..\lib\_Nfsr.fsx"
+#load "..\lib\Nfsr._Nfsr.fsx"
+open Nfsr
 if Args.has "-pr" then
     printfn "started %A" System.DateTime.Now
 printfn "%s" ("list executing path " + Resolver.localPath)

@@ -1,6 +1,7 @@
-#load "..\lib\Process.fsx"
-#load "..\lib\_Nfsr.fsx"
+#load "..\lib\Nfsr.Process.fsx"
+#load "..\lib\Nfsr._Nfsr.fsx"
 
+open Nfsr
 open System.IO
 
 let args = Args.getArgs()

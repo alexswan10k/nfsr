@@ -1,8 +1,9 @@
-#load "..\lib\_Nfsr.fsx"
-#load "..\lib\ListUtils.fsx"
+#load "..\lib\Nfsr._Nfsr.fsx"
+#load "..\lib\Nfsr.ListUtils.fsx"
 
 open System.IO
-open ListUtils
+open Nfsr
+open Nfsr.ListUtils
 //add library > Searches global and local for library.
 //restore > restores je
 

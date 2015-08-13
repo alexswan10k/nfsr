@@ -1,13 +1,17 @@
-#load "..\lib\Process.fsx"
-#load "..\lib\_Nfsr.fsx"
+#load "..\lib\Nfsr._Nfsr.fsx"
+#load "..\lib\Nfsr.Process.fsx"
+
+open System.IO
+open Nfsr
+
 if Args.has "-pr" then
     printfn "started %A" System.DateTime.Now
-open System.IO
 
-#if INTERACTIVE
-printfn "Running from interactive. Attempting to compile modules..."
-Process.executeProcess(Resolver.fsiPath, __SOURCE_DIRECTORY__+ "\compile.fsx --all-internal") |> Process.print
-#endif
+
+//#if INTERACTIVE
+//printfn "Running from interactive. Attempting to compile modules..."
+//Process.executeProcess(Resolver.fsiPath, __SOURCE_DIRECTORY__+ "\compile.fsx --all-internal") |> Process.print
+//#endif
 
 let args = Args.getArgs() |> Seq.skip 1 |> Seq.toArray
 

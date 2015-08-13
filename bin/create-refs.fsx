@@ -1,7 +1,8 @@
-#load "..\lib\Resolver.fsx"
-#load "..\lib\Args.fsx"
+#load "..\lib\Nfsr.Resolver.fsx"
+#load "..\lib\Nfsr.Args.fsx"
 open System
 open System.IO
+open Nfsr
 
 let private scripts =
     Resolver.getFiles ({Path= Resolver.localPath; AllowCache=false}) (Seq.singleton Resolver.FileType.Fsx) Resolver.getLibraries

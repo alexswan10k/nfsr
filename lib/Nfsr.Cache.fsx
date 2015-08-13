@@ -1,4 +1,5 @@
-#load "Store.fsx"
+#load "Nfsr.Store.fsx"
+open Nfsr.Store
 
 open System
 
@@ -8,7 +9,7 @@ type Cache<'a> =
         Expiry: DateTime
     }
 
-type CacheFileStore<'a>(expiry: TimeSpan, store: Store.FileStore<Cache<'a>>) =
+type CacheFileStore<'a>(expiry: TimeSpan, store: FileStore<Cache<'a>>) =
     //let store = Store.FileStore<Cache<'a>>(path)
     let buildCache (buildItem : unit -> 'a) () = 
         {

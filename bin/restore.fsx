@@ -1,6 +1,7 @@
-#load "..\lib\Resolver.fsx"
-#load "..\lib\Process.fsx"
+#load "..\lib\Nfsr.Resolver.fsx"
+#load "..\lib\Nfsr.Process.fsx"
 
+open Nfsr
 open System.IO
 
 type FolderType = 

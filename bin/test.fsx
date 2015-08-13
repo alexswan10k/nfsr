@@ -1,4 +1,7 @@
-#load "..\lib\Args.fsx"
+#load "..\lib\Nfsr.Args.fsx"
+
+open Nfsr
+
 printfn "Test"
 printfn "args: "
 
