@@ -301,7 +301,7 @@ let private getClosestMatch getOptionsFn name (allowedTypes : FileType[]) =
     let rec getClosestMatchRec (paths: seq<SearchPath>) =
         let path = Seq.head paths
         let options = getFiles path allowedTypes getOptionsFn
-        let seq = options |> Seq.filter (fun q -> q.Name.Contains name)
+        let seq = options |> Seq.filter (fun q -> Path.GetFileNameWithoutExtension(q.Name) = name)
         if not (Seq.isEmpty seq) then
             Some (Seq.head seq)
         else

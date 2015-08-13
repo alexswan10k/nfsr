@@ -17,7 +17,6 @@ let updateRefs (arr: array<string>) =
             //updateReferenceFor r
             match Resolver.getClosestLibraryMatch (r) allowedTypes with
             | Some(file) -> 
-                printfn "%A" file
                 yield file
             | None -> ()
             |]
@@ -64,7 +63,14 @@ match args |> Array.toList with
     else
         printfn "%s not found" libName
 
-| ElementsAfter ["refresh"] _ -> 
+| Elements ["refresh"] -> 
     updateRefs lockData
     ()
+| Elements ["clean"] -> 
+    if File.Exists lockPath then
+        printfn "cleaning lockPath"
+        File.Delete lockPath
+    if File.Exists activePath then
+        printfn "cleaning activePath"
+        File.Delete activePath
 | _ -> printfn "no action taken"

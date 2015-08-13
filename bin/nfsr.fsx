@@ -4,6 +4,11 @@ if Args.has "-pr" then
     printfn "started %A" System.DateTime.Now
 open System.IO
 
+#if INTERACTIVE
+printfn "Running from interactive. Attempting to compile modules..."
+Process.executeProcess(Resolver.fsiPath, __SOURCE_DIRECTORY__+ "\compile.fsx --all-internal") |> Process.print
+#endif
+
 let args = Args.getArgs() |> Seq.skip 1 |> Seq.toArray
 
 if args.Length < 1 || args.[0] = "-h" || args.[0] = "--help" then
