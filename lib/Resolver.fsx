@@ -35,13 +35,15 @@ let fscPath =
 let powershellPath = 
     powershellPathN + """\Powershell.exe"""
 
-let rec private getAllFiles dir pattern =
-    seq { yield! Directory.EnumerateFiles(dir, pattern)
-          for d in Directory.EnumerateDirectories(dir) do
-              yield! getAllFiles d pattern }
+//let rec private getAllFiles dir pattern =
+//    seq { yield! Directory.EnumerateFiles(dir, pattern)
+//          for d in Directory.EnumerateDirectories(dir) do
+//              yield! getAllFiles d pattern }
 
 let getFilesIn pattern dir =
-    Directory.EnumerateFiles(dir, pattern)
+    try Directory.EnumerateFiles(dir, pattern)  //hack for long paths
+    with _ -> System.Linq.Enumerable.Empty<string>()
+
 let getFsxFilesIn =
     getFilesIn "*.fsx"
 
@@ -96,13 +98,17 @@ let private getModules path (allowedType: FileType) isRecursive =
     let getFilesIn path priority =
         let getFilesForExt path ext (fileType: FileType) =
             [|for file in (getFilesIn ext path) ->
+                    let fileName =
+                        try Path.GetFileName(file) //hack for long paths
+                        with _ -> "" 
+                    
                     {
                         FileType = fileType;
-                        Name = Path.GetFileName(file);
+                        Name = fileName;
                         Path = file;
                         Priority = priority
                     }
-                |]
+                |] |> Array.filter (fun q -> q.Name.Length > 0)
         let fileGroups = [|for t in Seq.singleton allowedType ->
                             match t with
                             | FileType.Fsx -> getFilesForExt path "*.fsx" FileType.Fsx
@@ -149,9 +155,12 @@ let private getModules path (allowedType: FileType) isRecursive =
                         match file with
                         | f when isToBeExcluded f -> ()
                         | _ -> yield (categorizeByConvention(file), score) //penalise scripts not conforming to convention. These should resolve after scripts in bin
-                if path.Length < 240 then
-                    for d in Directory.EnumerateDirectories(path) do
-                        yield! getModules d (level + 1)
+
+                let dirs = 
+                    try Directory.EnumerateDirectories(path) //hack for long paths
+                    with _ -> System.Linq.Enumerable.Empty<string>()
+                for d in dirs do
+                    yield! getModules d (level + 1)
             }
     let modules = getModules path 0
                     |> Seq.sortBy(fun (file, level) -> level)

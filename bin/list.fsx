@@ -20,6 +20,6 @@ for path in Resolver.searchPaths do
     Resolver.getFiles path allowedTypes resolutionFileTypeFn
     |> Seq.map (fun q -> q.Path)
     |> Seq.map System.IO.Path.GetFileNameWithoutExtension
-    |> Seq.iter (printfn "%s")
+    |> Seq.iter (printfn "  %s")
 if Args.has "-pr" then
     printfn "finished %A" System.DateTime.Now
