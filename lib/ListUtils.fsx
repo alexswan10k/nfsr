@@ -16,7 +16,7 @@ let elementsAfter compareList list =
     | Some(length) -> 
         //List.skip length list
         list |> List.toSeq |> Seq.skip length |> Seq.toList |> Some
-    | None -> None([])
+    | None -> None
 
 let (|ElementsAfter|_|) compareList list =
      elementsAfter compareList list
