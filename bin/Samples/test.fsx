@@ -1,4 +1,4 @@
-#load "..\lib\Args.fsx"
+#load "..\..\lib\Args.fsx"
 printfn "Test"
 printfn "args: "
 

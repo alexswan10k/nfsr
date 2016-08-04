@@ -32,14 +32,14 @@ else
                         if m.FileType = Resolver.FileType.Fsx then
                             if File.Exists(m.Path.Replace(".fsx", ".exe")) then
                                 printfn "using compiled exe instead"
-                                Process.executeProcess(m.Path.Replace(".fsx", ".exe"), joinedArgs) |> Process.print
+                                Process.executeProcess(m.Path.Replace(".fsx", ".exe"), joinedArgs) |> ignore
                             else
-                                Process.executeProcess(Resolver.fsiPath, target) |> Process.print
+                                Process.executeProcess(Resolver.fsiPath, target) |> ignore
                         else if m.FileType = Resolver.FileType.Powershell then
-                            Process.executeProcess(Resolver.powershellPath, "-ExecutionPolicy Bypass -File "+ target) |> Process.print
+                            Process.executeProcess(Resolver.powershellPath, "-ExecutionPolicy Bypass -File "+ target) |> ignore
                             //Process.shellExecute("powershell -ExecutionPolicy Bypass -File "+ target) |> Process.print
                         else
-                            Process.shellExecute(target) |> Process.print
+                            Process.shellExecute(target) |> ignore
 
                     if Args.hasFor "-h" args || Args.hasFor "--help" args then
                         let helpfilePath = m.Path
