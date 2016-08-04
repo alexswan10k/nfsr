@@ -1,0 +1,12 @@
+#!/bin/sh
+
+basedir=`dirname "$0"`
+
+if [ -x "/c/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe" ]; then
+  "/c/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe"  "$basedir/nfsr.fsx" "$@"
+  ret=$?
+else 
+    echo no fsi found
+
+fi
+exit $ret
