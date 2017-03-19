@@ -7,6 +7,9 @@ IF EXIST %nfsrExePath% (
 )
 
 IF NOT EXIST %nfsrExePath% (
+	IF EXIST "%ProgramFiles(x86)%\Microsoft SDKs\F#\4.1\Framework\v4.0" (
+		set fsharppath="%ProgramFiles(x86)%\Microsoft SDKs\F#\4.1\Framework\v4.0"
+	)
 	IF EXIST "%ProgramFiles(x86)%\Microsoft SDKs\F#\3.0\Framework\v4.0\" (
 		set fsharppath="%ProgramFiles(x86)%\Microsoft SDKs\F#\3.0\Framework\v4.0"
 	)

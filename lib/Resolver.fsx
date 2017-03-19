@@ -13,6 +13,7 @@ let private configPath = System.Environment.GetFolderPath(System.Environment.Spe
 let private fsharpPath = 
     let px86 = System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86)
     let directoriesToCheck = [
+        px86 + """\Microsoft SDKs\F#\4.1\Framework\v4.0"""
         px86 + """\Microsoft SDKs\F#\4.0\Framework\v4.0"""
         px86 + """\Microsoft SDKs\F#\3.1\Framework\v4.0"""
         px86 + """\Microsoft SDKs\F#\3.0\Framework\v4.0"""
